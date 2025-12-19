@@ -1,0 +1,39 @@
+========================================
+COPY-PASTE THESE COMMANDS (One by One)
+========================================
+
+# 1. Navigate to project
+cd C:\Users\MYPC\Desktop\loan_lens
+
+# 2. Kill the stuck process using port 3000 or 3001
+Stop-Process -Id 1068 -ErrorAction SilentlyContinue
+
+# 3. Kill any other Node.js dev servers
+taskkill /f /im node.exe
+
+# 4. Delete the lock file (if still stuck)
+Remove-Item -Recurse -Force .next\dev\lock -ErrorAction SilentlyContinue
+
+# 5. Remove stray package-lock.json from user root
+Remove-Item C:\Users\MYPC\package-lock.json -ErrorAction SilentlyContinue
+
+# 6. Start fresh
+npm run dev
+
+========================================
+OR USE THE SCRIPT (Easier)
+========================================
+
+Just run:
+.\CLEAN_START.ps1
+
+This does all the cleanup and starts the server automatically.
+
+========================================
+ONE-LINE VERSION (Copy-Paste)
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens; Stop-Process -Id 1068 -ErrorAction SilentlyContinue; taskkill /f /im node.exe 2>$null; Start-Sleep -Seconds 2; Remove-Item -Recurse -Force .next\dev\lock -ErrorAction SilentlyContinue; Remove-Item C:\Users\MYPC\package-lock.json -ErrorAction SilentlyContinue; npm run dev
+
+========================================
+

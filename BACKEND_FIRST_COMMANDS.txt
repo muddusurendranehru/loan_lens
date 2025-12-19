@@ -1,0 +1,85 @@
+========================================
+BACKEND FIRST - THEN FRONTEND
+========================================
+
+IMPORTANT: Next.js runs BOTH backend + frontend in ONE server
+But we can TEST backend APIs first, then frontend!
+
+
+STEP 1: Start Server (Backend + Frontend Together)
+----------------------------------------------------
+Copy-paste in PowerShell:
+
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+Server starts on: http://localhost:3000
+(This runs BOTH backend APIs AND frontend pages)
+
+
+STEP 2: Test Backend APIs First
+---------------------------------
+Open NEW PowerShell window and test:
+
+Test Database Connection:
+curl http://localhost:3000/api/db/test-connection -UseBasicParsing
+
+Test Environment:
+curl http://localhost:3000/api/env/verify -UseBasicParsing
+
+Test Signup API:
+curl -X POST http://localhost:3000/api/auth/signup -H "Content-Type: application/json" -d "{\"email\":\"test@test.com\",\"password\":\"test123456\"}"
+
+Expected: All should return JSON responses
+
+
+STEP 3: Test Frontend Pages
+----------------------------
+After backend APIs work, test frontend:
+
+1. Signup Page: http://localhost:3000/signup
+2. Login Page: http://localhost:3000/login
+3. Dashboard Page: http://localhost:3000/dashboard
+
+
+========================================
+BACKEND API ENDPOINTS (Test These First)
+========================================
+
+Authentication:
+- POST /api/auth/signup - Create user
+- POST /api/auth/[...nextauth] - Login
+
+Database:
+- GET /api/db/test-connection - Test DB
+- GET /api/db/test - Test schema
+- GET /api/env/verify - Check env vars
+
+Data Processing:
+- POST /api/parse/upload - Upload Excel/Sheets
+- POST /api/parse/confirm - Save transactions
+
+Dashboard:
+- GET /api/dashboard/months - Get monthly data
+- GET /api/dashboard/monthly - Get EBITDA
+
+
+========================================
+FRONTEND PAGES (Test After Backend Works)
+========================================
+
+- http://localhost:3000/login
+- http://localhost:3000/signup
+- http://localhost:3000/dashboard
+
+
+========================================
+QUICK START:
+========================================
+
+1. Start server: cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+2. Test backend: curl http://localhost:3000/api/db/test-connection
+3. Test frontend: Open http://localhost:3000/login in browser
+
+
+========================================
+

@@ -1,0 +1,154 @@
+========================================
+LoanLens - Manual Commands Guide
+========================================
+
+IMPORTANT: Next.js runs BOTH frontend and backend on ONE server.
+There is no separate backend server - Next.js handles everything.
+
+========================================
+1. START SERVER (Choose ONE method)
+========================================
+
+Method A - PowerShell Script (Recommended):
+    .\START_SERVER.ps1
+
+Method B - Batch File:
+    START_SERVER.bat
+
+Method C - Manual Command:
+    npm run dev
+
+Method D - Full Path (if not in project folder):
+    cd C:\Users\MYPC\Desktop\loan_lens
+    npm run dev
+
+========================================
+2. CHECK FOR ERRORS
+========================================
+
+Method A - PowerShell Script:
+    .\CHECK_ERRORS.ps1
+
+Method B - Manual Checks:
+
+    # Check if server is running
+    Get-NetTCPConnection -LocalPort 3000
+
+    # Check Node.js processes
+    Get-Process -Name node
+
+    # Check .env.local exists
+    Test-Path .env.local
+
+    # View .env.local (first line only)
+    Get-Content .env.local | Select-Object -First 1
+
+========================================
+3. STOP SERVER
+========================================
+
+Method A - PowerShell Script:
+    .\STOP_SERVER.ps1
+
+Method B - Manual Command:
+    Stop-Process -Name node -Force
+
+Method C - Remove lock and restart:
+    Remove-Item .next\dev\lock -Force
+    Stop-Process -Name node -Force
+    npm run dev
+
+========================================
+4. TEST API ENDPOINTS
+========================================
+
+Method A - PowerShell Script:
+    .\TEST_API.ps1
+
+Method B - Manual Tests:
+
+    # Test NextAuth providers
+    curl http://localhost:3000/api/auth/providers
+
+    # Test CSRF token
+    curl http://localhost:3000/api/auth/csrf
+
+    # Test session (should return empty without login)
+    curl http://localhost:3000/api/auth/session
+
+    # PowerShell alternative:
+    Invoke-WebRequest -Uri "http://localhost:3000/api/auth/providers" -UseBasicParsing
+
+========================================
+5. VIEW SERVER LOGS
+========================================
+
+The server logs appear directly in the terminal where you ran "npm run dev".
+
+Look for:
+- ✅ Success messages (green)
+- ❌ Error messages (red)
+- ⚠️  Warnings (yellow)
+- Database connection errors
+- API route errors
+
+========================================
+6. COMMON ERRORS & FIXES
+========================================
+
+Error: "Port 3000 is in use"
+Fix:
+    Stop-Process -Name node -Force
+    Remove-Item .next\dev\lock -Force
+    npm run dev
+
+Error: "DATABASE_URL is not configured"
+Fix:
+    Check .env.local exists and has DATABASE_URL
+
+Error: "Unable to acquire lock"
+Fix:
+    Remove-Item .next\dev\lock -Force
+    Stop-Process -Name node -Force
+    npm run dev
+
+Error: "500 Internal Server Error"
+Fix:
+    Check server terminal for detailed error
+    Check .env.local has correct DATABASE_URL
+    Check database connection
+
+========================================
+7. ACCESS POINTS
+========================================
+
+Frontend (Browser):
+    http://localhost:3000
+    http://localhost:3000/login
+    http://localhost:3000/dashboard
+
+Backend API:
+    http://localhost:3000/api/auth/providers
+    http://localhost:3000/api/auth/session
+    http://localhost:3000/api/auth/csrf
+    http://localhost:3000/api/dashboard/months
+    http://localhost:3000/api/parse/upload
+
+========================================
+8. QUICK START (Copy-Paste)
+========================================
+
+# Stop any existing server
+Stop-Process -Name node -Force -ErrorAction SilentlyContinue
+
+# Remove lock file
+if (Test-Path ".next\dev\lock") { Remove-Item ".next\dev\lock" -Force }
+
+# Start server
+npm run dev
+
+# In another terminal, test API
+Invoke-WebRequest -Uri "http://localhost:3000/api/auth/providers" -UseBasicParsing
+
+========================================
+

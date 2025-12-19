@@ -1,0 +1,53 @@
+========================================
+FULL COMMANDS - COPY & PASTE EXACTLY
+========================================
+
+COMMAND 1: Start Server (Full Path)
+------------------------------------
+Copy this ENTIRE line and paste in PowerShell:
+
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+
+COMMAND 2: Start Server (Alternative)
+---------------------------------------
+Copy this ENTIRE line and paste in PowerShell:
+
+cd C:\Users\MYPC\Desktop\loan_lens && npm run dev
+
+
+COMMAND 3: Start Server (PowerShell Full)
+------------------------------------------
+Copy this ENTIRE line and paste in PowerShell:
+
+Set-Location C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+
+COMMAND 4: Start Server (With Node Direct)
+-------------------------------------------
+Copy this ENTIRE line and paste in PowerShell:
+
+cd C:\Users\MYPC\Desktop\loan_lens; node_modules\.bin\next dev
+
+
+========================================
+VERIFY COMMAND
+========================================
+
+After server starts, test with:
+
+curl http://localhost:3000 -UseBasicParsing
+
+OR open browser:
+http://localhost:3000
+
+
+========================================
+STOP SERVER
+========================================
+
+Press: Ctrl+C
+
+
+========================================
+

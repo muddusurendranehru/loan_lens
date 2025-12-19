@@ -1,0 +1,56 @@
+========================================
+COPY-PASTE THESE COMMANDS
+========================================
+
+IMPORTANT: Next.js runs BOTH frontend AND backend on ONE server.
+You don't need 2 separate servers!
+
+========================================
+COMMAND 1: Navigate to project
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens
+
+========================================
+COMMAND 2: Start server
+========================================
+
+npm run dev
+
+========================================
+OR: Do both in one line
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+========================================
+IF PORT 3000 IS BUSY
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens
+Stop-Process -Name node -Force
+npm run dev
+
+========================================
+IF YOU GET "Missing script: dev"
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens
+npm install
+npm run dev
+
+========================================
+ACCESS YOUR APP
+========================================
+
+After "npm run dev" starts, open:
+http://localhost:3000
+
+========================================
+STOP SERVER
+========================================
+
+Press Ctrl+C in the terminal, OR:
+Stop-Process -Name node -Force
+
+========================================

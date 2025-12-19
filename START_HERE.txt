@@ -1,0 +1,52 @@
+========================================
+SIMPLE COPY-PASTE COMMANDS
+========================================
+
+STEP 1: Navigate to project folder
+-----------------------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+
+STEP 2: Start the server (ONE command)
+-----------------------------------
+npm run dev
+
+That's it! Next.js runs BOTH frontend and backend on ONE server.
+
+========================================
+FULL COMMAND (Copy all at once)
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+========================================
+IF YOU GET ERRORS
+========================================
+
+Error: "Port 3000 is in use"
+Fix:
+cd C:\Users\MYPC\Desktop\loan_lens
+Stop-Process -Name node -Force
+npm run dev
+
+Error: "Missing script: dev"
+Fix:
+cd C:\Users\MYPC\Desktop\loan_lens
+npm install
+npm run dev
+
+Error: "Unable to acquire lock"
+Fix:
+cd C:\Users\MYPC\Desktop\loan_lens
+Remove-Item .next\dev\lock -Force -ErrorAction SilentlyContinue
+Stop-Process -Name node -Force
+npm run dev
+
+========================================
+ACCESS YOUR APP
+========================================
+
+After server starts, open browser:
+http://localhost:3000
+
+========================================
+

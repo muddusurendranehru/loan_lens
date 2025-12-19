@@ -1,0 +1,50 @@
+========================================
+CORRECT POWERSHELL COMMANDS
+========================================
+
+POWERSHELL DOES NOT USE && 
+Use semicolon (;) instead!
+
+
+COMMAND 1 - CORRECT (PowerShell):
+----------------------------------
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+
+COMMAND 2 - CORRECT (Two lines):
+----------------------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+
+COMMAND 3 - CORRECT (Set-Location):
+------------------------------------
+Set-Location C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+
+COMMAND 4 - EASIEST (Double-click):
+------------------------------------
+Just double-click: START.bat
+
+
+========================================
+WRONG COMMANDS (Don't use):
+========================================
+
+❌ cd C:\Users\MYPC\Desktop\loan_lens && npm run dev
+   (PowerShell doesn't support &&)
+
+✅ Use semicolon (;) instead!
+
+
+========================================
+QUICK START:
+========================================
+
+Option 1: Double-click START.bat
+Option 2: Copy-paste: cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+Option 3: Run: .\START.ps1
+
+
+========================================
+

@@ -1,0 +1,55 @@
+========================================
+FRONTEND SERVER COMMAND
+========================================
+
+POWERSHELL COMMAND:
+-------------------
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+
+OR DOUBLE-CLICK:
+----------------
+START_FRONTEND.bat
+
+
+========================================
+FRONTEND PAGES (After Server Starts):
+========================================
+
+Login Page:
+http://localhost:3000/login
+
+Signup Page:
+http://localhost:3000/signup
+
+Dashboard Page:
+http://localhost:3000/dashboard
+
+Home Page:
+http://localhost:3000
+
+
+========================================
+NOTE:
+========================================
+
+Next.js runs BOTH frontend pages AND backend APIs
+in ONE server on port 3000.
+
+Frontend = Pages (login, signup, dashboard)
+Backend = APIs (/api/*)
+
+Both work together!
+
+
+========================================
+QUICK START:
+========================================
+
+1. Run: cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+2. Wait for: "Ready on http://localhost:3000"
+3. Open browser: http://localhost:3000/login
+
+
+========================================
+

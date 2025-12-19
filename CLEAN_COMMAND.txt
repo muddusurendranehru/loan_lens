@@ -1,0 +1,2 @@
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+

@@ -1,0 +1,61 @@
+========================================
+IMPORTANT: Next.js runs BOTH on ONE server
+========================================
+
+Next.js is a full-stack framework. When you run "npm run dev",
+it starts ONE server that handles:
+- Frontend (React pages)
+- Backend (API routes at /api/*)
+
+You CANNOT run them separately - they're the same process.
+
+========================================
+COMMAND 1: Start Server (Frontend + Backend)
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+This ONE command starts BOTH:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3000/api/*
+
+========================================
+COMMAND 2: Check Server Status
+========================================
+
+Get-NetTCPConnection -LocalPort 3000
+
+This shows if the server is running.
+
+========================================
+ONE-LINE COMMAND (Copy-Paste)
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+========================================
+WHAT HAPPENS WHEN YOU RUN IT
+========================================
+
+Terminal will show:
+  ▲ Next.js 16.1.0
+  - Local: http://localhost:3000
+  - Network: http://192.168.x.x:3000
+
+This ONE server serves:
+  ✅ Frontend pages (/, /login, /dashboard)
+  ✅ Backend APIs (/api/auth/*, /api/parse/*, etc.)
+
+========================================
+IF YOU NEED TO STOP
+========================================
+
+Press Ctrl+C in the terminal
+
+OR:
+
+Stop-Process -Name node -Force
+
+========================================
+

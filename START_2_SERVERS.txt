@@ -1,0 +1,41 @@
+========================================
+MANUAL COMMANDS - 2 SERVERS
+========================================
+
+COMMAND 1: Start Development Server
+------------------------------------
+Copy and paste this in PowerShell:
+
+npm run dev
+
+This starts BOTH frontend and backend on port 3000
+Server URL: http://localhost:3000
+
+
+COMMAND 2: Verify Server is Running
+------------------------------------
+Open a NEW PowerShell window and paste:
+
+curl http://localhost:3000 -UseBasicParsing
+
+OR test in browser:
+http://localhost:3000
+
+
+========================================
+NOTE: Next.js runs frontend + backend together
+No need for separate servers!
+========================================
+
+Frontend Pages:
+- http://localhost:3000/login
+- http://localhost:3000/signup
+- http://localhost:3000/dashboard
+
+Backend APIs:
+- http://localhost:3000/api/auth/signup
+- http://localhost:3000/api/parse/upload
+- http://localhost:3000/api/dashboard/monthly
+
+========================================
+

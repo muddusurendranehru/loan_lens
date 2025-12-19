@@ -1,0 +1,128 @@
+{
+  "info": {
+    "name": "LoanLens API",
+    "description": "Backend API Testing Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Database - Test Connection",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/db/test-connection",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "db", "test-connection"]
+        }
+      }
+    },
+    {
+      "name": "Database - Test Schema",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/db/test",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "db", "test"]
+        }
+      }
+    },
+    {
+      "name": "Environment - Verify",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/env/verify",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "env", "verify"]
+        }
+      }
+    },
+    {
+      "name": "Auth - Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"test123456\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/signup",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "signup"]
+        }
+      }
+    },
+    {
+      "name": "Parse - Upload File",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "accountType",
+              "value": "savings",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/parse/upload",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "parse", "upload"]
+        }
+      }
+    },
+    {
+      "name": "Dashboard - Monthly EBITDA",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/dashboard/monthly?month=03&year=2025",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "dashboard", "monthly"],
+          "query": [
+            {
+              "key": "month",
+              "value": "03"
+            },
+            {
+              "key": "year",
+              "value": "2025"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
+
