@@ -1,7 +1,22 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { JWT } from 'next-auth/jwt';
+import { Session, User } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { sql } from '@/lib/db';
+
+// Extend NextAuth types
+declare module 'next-auth' {
+  interface User {
+    id?: string;
+  }
+  interface Session {
+    user: {
+      id?: string;
+      email?: string;
+    };
+  }
+}
 
 export const authOptions = {
   providers: [
@@ -67,19 +82,19 @@ export const authOptions = {
     error: '/login'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        (session.user as { id?: string }).id = token.id as string;
+        session.user.id = token.id as string;
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
       // After sign in, redirect to dashboard
       if (url.includes('/login') || url === baseUrl) {
         return `${baseUrl}/dashboard`;
@@ -88,7 +103,7 @@ export const authOptions = {
     }
   },
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt' as const
   },
   secret: process.env.NEXTAUTH_SECRET || 'loan_lens_secret_key_2024'
 };

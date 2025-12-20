@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import * as XLSX from 'xlsx';
-import { parseDate, formatDateISO, getFinancialYear, cleanAmount } from '@/lib/dateUtils';
+import { parseDateToDate, formatDateISO, getFinancialYear, cleanAmount } from '@/lib/dateUtils';
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
       try {
         const client = await auth.getClient();
-        const sheets = google.sheets({ version: 'v4', auth: client });
+        const sheets = google.sheets({ version: 'v4', auth: client as any });
         const response = await sheets.spreadsheets.values.get({
           spreadsheetId: sheetId,
           range: 'A:Z',
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
 
       if (!dateStr || (!debitStr && !creditStr)) continue;
 
-      const date = parseDate(dateStr);
+      const date = parseDateToDate(dateStr);
       if (!date || isNaN(date.getTime())) continue;
 
       // Determine amount (EMIs are debits)
