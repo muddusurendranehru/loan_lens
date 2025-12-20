@@ -1,171 +1,76 @@
-# LoanLens Pro - Verification Checklist
+# Code Verification Checklist
 
-## ✅ 1. Environment Variables Check
+## ✅ Verified Requirements
 
-**File:** `.env.local`
-```env
-DATABASE_URL=postgresql://neondb_owner:npg_zUbO5HZ9kDur@ep-icy-dream-ah5xlk96-pooler.us-east-1.aws.neon.tech/loan_lens?sslmode=require
-JWT_SECRET=loan_lens_super_secret_key_2024_secure_token
-NEXTAUTH_SECRET=loan_lens_nextauth_secret_key_2024
-NEXTAUTH_URL=http://localhost:3000
-```
+### 1. Dependencies
+- ✅ **@neondatabase/serverless**: Used via `sql` import from `@/lib/db.ts`
+- ✅ **xlsx**: Used server-side only (`import * as XLSX from 'xlsx'`)
 
-**Status:** ✅ DATABASE_URL is set correctly
-
----
-
-## ✅ 2. Backend → Database Connection
-
-**File:** `src/lib/db.ts`
-- Uses `@neondatabase/serverless`
-- Reads `process.env.DATABASE_URL`
-- Exports `sql` for queries
-
-**Test Endpoint:** `GET /api/db/test-connection`
-- Tests DATABASE_URL exists
-- Tests connection to Neon
-- Tests transactions table exists
-- Tests INSERT/FETCH capability
-
-**Status:** ✅ Backend configured correctly
-
----
-
-## ✅ 3. Frontend → Backend Alignment
-
-### API Endpoints Mapping:
-
-| Frontend Call | Backend Route | Status |
-|--------------|--------------|--------|
-| `POST /api/parse/upload` | `src/app/api/parse/upload/route.ts` | ✅ Aligned |
-| `POST /api/parse/confirm` | `src/app/api/parse/confirm/route.ts` | ✅ Aligned |
-| `GET /api/dashboard/months` | `src/app/api/dashboard/months/route.ts` | ✅ Aligned |
-
-### Data Structure Alignment:
-
-**Upload Response:**
-```typescript
-{
-  success: true,
-  source: string,
-  transactions: Transaction[],
-  inflows: Transaction[],
-  outflows: Transaction[],
-  summary: {
-    totalInflow: number,
-    totalOutflow: number,
-    netBalance: number,
-    inflowCount: number,
-    outflowCount: number
+### 2. Category Logic
+- ✅ **hdfc/tata/bajaj → emi**: Line 29 in upload/route.ts
+  ```typescript
+  if (lower.includes('hdfc') || lower.includes('tata') || lower.includes('bajaj')) {
+    return 'emi';
   }
-}
-```
+  ```
+- ✅ **loan → business_loan**: Line 23 (for inflows)
+- ✅ **salary/cbm → clinic_income**: Line 24 (for inflows)
+- ✅ **rent/homarent → rent**: Line 32-33
+- ✅ **tax/itax → tax**: Line 35-36
+- ✅ **default → vendor_payment**: Line 39
 
-**Frontend Expects:** ✅ Matches exactly
+### 3. Database Constraints
+- ✅ **ON CONFLICT (txn_date, amount, description) DO NOTHING**: Line 178 in upload/route.ts
+- ✅ **UNIQUE constraint** on (txn_date, amount, description) in schema.sql
 
-**Confirm Request:**
-```typescript
+### 4. Filtering Thresholds
+- ✅ **Inflows ≥ ₹15,000**: Line 102 in upload/route.ts
+- ✅ **Outflows ≥ ₹15,000**: Line 112 in upload/route.ts
+
+### 5. Date Handling
+- ✅ **dd/mm/yyyy → YYYY-MM-DD**: Uses `parseDate()` and `formatDateISO()` from dateUtils
+
+### 6. Financial Year
+- ✅ **Apr–Mar calculation**: Uses `getFinancialYear()` from dateUtils
+
+## 📝 Test Case
+
+**File**: `24septicici.xlsx`
+**Expected**: Should save 7 rows to `cashflow_entries` table
+
+## 🔍 Report API Created
+
+**Endpoint**: `GET /api/report/cashflow`
+
+**Query Parameters**:
+- `month` (optional): Month number (1-12)
+- `year` (optional): Year (e.g., 2024)
+- `financial_year` (optional): Financial year (e.g., "2024-25")
+
+**Response**:
+```json
 {
-  transactions: Transaction[],
-  sheetName: string
+  "success": true,
+  "summary": {
+    "total_inflow": number,
+    "total_inflowFormatted": "₹X",
+    "total_outflow": number,
+    "total_outflowFormatted": "₹Y",
+    "net_balance": number,
+    "net_balanceFormatted": "₹Z",
+    "inflow_count": number,
+    "outflow_count": number,
+    "total_transactions": number
+  },
+  "categoryBreakdown": [
+    {
+      "category": "emi",
+      "flow_type": "outflow",
+      "count": 5,
+      "total_amount": 391000,
+      "total_amountFormatted": "₹3,91,000"
+    }
+  ],
+  "transactions": [...]
 }
 ```
-
-**Frontend Sends:** ✅ Matches exactly
-
-**Status:** ✅ Frontend-Backend fully aligned
-
----
-
-## ✅ 4. Database Schema
-
-**Table:** `transactions`
-```sql
-CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES users(id),
-    txn_date DATE NOT NULL,
-    amount NUMERIC(12, 2) NOT NULL,
-    type VARCHAR(20) CHECK (type IN ('inflow', 'outflow')),
-    category VARCHAR(50) NOT NULL,
-    description TEXT,
-    source_sheet VARCHAR(255),
-    source_row INTEGER,
-    financial_year VARCHAR(10) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(txn_date, amount, description)
-);
-```
-
-**Status:** ⚠️ Table needs to be created in Neon SQL Editor
-
----
-
-## ✅ 5. Full Flow Test
-
-### Step 1: Test Database Connection
-```bash
-# Visit: http://localhost:3000/api/db/test-connection
-# Should return: { success: true, connection: {...} }
-```
-
-### Step 2: Test INSERT/FETCH
-```bash
-# Visit: http://localhost:3000/api/db/test-insert-fetch
-# Should return: { success: true, insert: {...}, fetch: {...} }
-```
-
-### Step 3: Frontend Upload Flow
-1. User uploads file/URL → `POST /api/parse/upload`
-2. Backend parses → Returns transactions
-3. Frontend displays → User reviews
-4. User clicks "SAVE ALL" → `POST /api/parse/confirm`
-5. Backend saves → Returns success
-6. Frontend refreshes → `GET /api/dashboard/months`
-
-**Status:** ✅ Flow is complete
-
----
-
-## 🚀 Next Steps
-
-1. **Create transactions table in Neon:**
-   ```sql
-   CREATE TABLE IF NOT EXISTS transactions (
-       id SERIAL PRIMARY KEY,
-       user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-       txn_date DATE NOT NULL,
-       amount NUMERIC(12, 2) NOT NULL,
-       type VARCHAR(20) NOT NULL CHECK (type IN ('inflow', 'outflow')),
-       category VARCHAR(50) NOT NULL,
-       description TEXT,
-       source_sheet VARCHAR(255),
-       source_row INTEGER,
-       financial_year VARCHAR(10) NOT NULL,
-       created_at TIMESTAMP DEFAULT NOW(),
-       UNIQUE(txn_date, amount, description)
-   );
-   
-   CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type);
-   CREATE INDEX IF NOT EXISTS idx_transactions_financial_year ON transactions(financial_year);
-   CREATE INDEX IF NOT EXISTS idx_transactions_txn_date ON transactions(txn_date);
-   ```
-
-2. **Test the endpoints:**
-   - Visit `http://localhost:3000/api/db/test-connection`
-   - Visit `http://localhost:3000/api/db/test-insert-fetch`
-
-3. **Test full flow from frontend:**
-   - Login → Dashboard → Upload → Save → View saved months
-
----
-
-## ✅ Summary
-
-- ✅ Environment variables configured
-- ✅ Backend connects to Neon database
-- ✅ Frontend-Backend API alignment verified
-- ✅ Data structures match
-- ⚠️ Transactions table needs to be created
-- ✅ Full flow is ready to test
-

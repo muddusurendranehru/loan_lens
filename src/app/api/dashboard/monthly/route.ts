@@ -5,15 +5,19 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const financial_year = searchParams.get('financial_year');
-    const month = searchParams.get('month'); // e.g., "2025-03" for March 2025
-    const year = searchParams.get('year');
+    const month = searchParams.get('month'); // e.g., "03" for March
+    const year = searchParams.get('year'); // e.g., "2025"
 
-    // Build WHERE clause
+    // Build WHERE clause - prioritize month/year for monthly dashboard
     let whereClause = sql``;
     if (month && year) {
       whereClause = sql`WHERE EXTRACT(MONTH FROM txn_date) = ${parseInt(month)} AND EXTRACT(YEAR FROM txn_date) = ${parseInt(year)}`;
     } else if (financial_year) {
       whereClause = sql`WHERE financial_year = ${financial_year}`;
+    } else {
+      // Default to current month if no params
+      const now = new Date();
+      whereClause = sql`WHERE EXTRACT(MONTH FROM txn_date) = ${now.getMonth() + 1} AND EXTRACT(YEAR FROM txn_date) = ${now.getFullYear()}`;
     }
 
     // Get monthly EBITDA summary

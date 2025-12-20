@@ -1,230 +1,201 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
+// src/app/api/parse/upload/route.ts
+import { NextRequest } from 'next/server';
 import * as XLSX from 'xlsx';
-import { parseDate, formatDateISO, getFinancialYear } from '@/lib/dateUtils';
+import { neon } from '@neondatabase/serverless';
 
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  },
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
+// ✅ Initialize Neon with explicit DATABASE_URL (required in App Router)
+const sql = neon(process.env.DATABASE_URL!);
 
-// Helper: clean amount string
-function parseAmount(str: string | number): number | null {
-  if (typeof str !== 'string') str = String(str);
-  const clean = str.replace(/[^\d.-]/g, '');
-  const num = parseFloat(clean);
-  return isNaN(num) ? null : num;
+// ✅ Safe amount parser: handles "29,39,040.87", "0.0", "-", etc.
+function cleanAmount(value: any): number {
+  if (value == null || value === '' || value === '-') return 0;
+  const str = String(value).replace(/[^0-9.]/g, ''); // Remove commas, spaces, etc.
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
 }
 
-// Helper: detect category from description + amount + flow
-function detectCategory(
-  description: string,
-  amount: number,
-  isCredit: boolean,
-  accountType: 'savings' | 'current'
-): { category: string; flow_type: 'inflow' | 'outflow' } {
-  const lower = description.toLowerCase();
-
-  // === INFLOWS ===
-  if (isCredit) {
-    if (lower.includes('homa') || lower.includes('clinic') || lower.includes('consultation')) {
-      return { category: 'clinic_revenue', flow_type: 'inflow' };
-    }
-    if (lower.includes('loan') || lower.includes('disbursed') || lower.includes('credit') || amount >= 500000) {
-      return { category: 'business_loan', flow_type: 'inflow' };
-    }
-    return { category: 'other_income', flow_type: 'inflow' };
+// ✅ Parse dd/mm/yyyy → yyyy-mm-dd
+function parseIndianDate(dateStr: string): string {
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
-
-  // === OUTFLOWS ===
-  // Bank interest (often small, labeled "INT")
-  if (lower.includes('int') && amount < 50000) {
-    return { category: 'bank_interest', flow_type: 'outflow' };
-  }
-
-  // Rent
-  if (lower.includes('rent') || lower.includes('house tax') || lower.includes('property')) {
-    return { category: 'rent', flow_type: 'outflow' };
-  }
-
-  // Salaries
-  if (lower.includes('salary') || lower.includes('staff') || lower.includes('payroll')) {
-    return { category: 'salaries', flow_type: 'outflow' };
-  }
-
-  // EMIs — assume all large debits (>=15000) are EMIs unless known otherwise
-  if (amount >= 15000) {
-    // Later: split into principal/interest if amortization data exists
-    // For now: mark as "emi_interest" → user will split during review
-    return { category: 'emi_interest', flow_type: 'outflow' };
-  }
-
-  // Vendor payments
-  if (lower.includes('electricity') || lower.includes('water') || lower.includes('internet') || 
-      lower.includes('amazon') || lower.includes('flipkart') || lower.includes('vendor')) {
-    return { category: 'vendor_payment', flow_type: 'outflow' };
-  }
-
-  // Default large outflow
-  if (amount >= 5000) {
-    return { category: 'vendor_payment', flow_type: 'outflow' };
-  }
-
-  // Small spends → ignore or mark personal
-  return { category: 'personal', flow_type: 'outflow' };
+  throw new Error(`Invalid date: ${dateStr}`);
 }
 
-export async function POST(req: NextRequest) {
+// ✅ Categorize by remark
+function categorize(remark: string, flow: 'inflow' | 'outflow'): string {
+  const lower = remark.toLowerCase();
+  if (flow === 'inflow') {
+    if (lower.includes('loan') || lower.includes('l and t') || lower.includes('finance limited')) {
+      return 'business_loan';
+    }
+    if (lower.includes('salary') || lower.includes('cbm') || lower.includes('anjani')) {
+      return 'clinic_income';
+    }
+    return 'income';
+  }
+  if (lower.includes('hdfc') || lower.includes('tata') || lower.includes('bajaj')) return 'emi';
+  if (lower.includes('rent') || lower.includes('homarent')) return 'rent';
+  if (lower.includes('tax') || lower.includes('itax')) return 'tax';
+  if (lower.includes('partner') || lower.includes('david') || lower.includes('suresh')) return 'transfer';
+  return 'vendor_payment';
+}
+
+// Find column indexes by header name (case-insensitive, partial match)
+function findColumnIndex(headers: string[], target: string): number {
+  const cleanHeaders = headers.map(h => h.toLowerCase().trim());
+  const keywords = target.toLowerCase().split(' ');
+  for (let i = 0; i < cleanHeaders.length; i++) {
+    if (keywords.every(kw => cleanHeaders[i].includes(kw))) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+export async function POST(request: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    const sheetUrl = formData.get('sheetUrl') as string | null;
-    const accountType = formData.get('accountType') as 'savings' | 'current' | null;
-
-    if (!accountType || (accountType !== 'savings' && accountType !== 'current')) {
-      return NextResponse.json({ error: 'Account type required: savings or current' }, { status: 400 });
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    if (!file || !file.name.endsWith('.xlsx')) {
+      return Response.json({ error: 'Please upload an .xlsx file' }, { status: 400 });
     }
 
-    let rows: (string | number)[][] = [];
-    let sourceName = 'Uploaded';
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer);
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as (string | number)[][];
 
-    // Parse file or Google Sheet
-    if (file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true, raw: false });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' }) as (string | number)[][];
-      sourceName = file.name;
-    } else if (sheetUrl) {
-      const sheetId = sheetUrl.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
-      if (!sheetId) {
-        return NextResponse.json({ error: 'Invalid Google Sheet URL' }, { status: 400 });
-      }
-
-      try {
-        const client = await auth.getClient();
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const response = await sheets.spreadsheets.values.get({
-          spreadsheetId: sheetId,
-          range: 'A:Z',
-        });
-        rows = (response.data.values || []) as (string | number)[][];
-        sourceName = 'Google Sheet';
-      } catch (googleError: any) {
-        // Fallback to public CSV if service account fails
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-        const csvResponse = await fetch(csvUrl);
-        if (!csvResponse.ok) {
-          return NextResponse.json({ 
-            error: 'Could not access Google Sheet. Make sure it is public or service account has access.',
-            details: googleError?.message 
-          }, { status: 400 });
-        }
-        const csvText = await csvResponse.text();
-        rows = csvText.split('\n').map(line => line.split(',').map(cell => cell.trim().replace(/^"|"$/g, '')));
-      }
-    } else {
-      return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 });
+    if (rows.length < 2) {
+      return Response.json({ error: 'Empty sheet' }, { status: 400 });
     }
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: 'No data found' }, { status: 400 });
-    }
+    // 🔍 Find columns by header name (case-insensitive, partial match)
+    const headers = (rows[0] as string[]).map(h => h?.toString().trim() || '');
+    const dateCol = findColumnIndex(headers, "Transaction Date");
+    const remarksCol = findColumnIndex(headers, "Transaction Remarks");
+    const withdrawalCol = findColumnIndex(headers, "Withdrawal Amount");
+    const depositCol = findColumnIndex(headers, "Deposit Amount");
 
-    // Auto-detect columns
-    const headers = rows[0].map(h => String(h || '').trim().toLowerCase());
-    let dateCol = headers.findIndex(h => /date|txn|transaction/i.test(h));
-    let debitCol = headers.findIndex(h => /debit|withdrawal|dr/i.test(h));
-    let creditCol = headers.findIndex(h => /credit|deposit|cr/i.test(h));
-    let descCol = headers.findIndex(h => /desc|narration|particulars|details/i.test(h));
+    // ADD THIS RIGHT AFTER finding columns
+    console.log("🔍 COLUMN DETECTION:");
+    console.log("Headers:", headers);
+    console.log("Date col:", dateCol);
+    console.log("Remarks col:", remarksCol);
+    console.log("Withdrawal col:", withdrawalCol);
+    console.log("Deposit col:", depositCol);
 
-    if (dateCol === -1 || descCol === -1 || (debitCol === -1 && creditCol === -1)) {
-      return NextResponse.json({
-        error: 'Could not auto-detect columns. Please ensure your sheet has: Date, Debit/Credit, Description.'
+    if (dateCol === -1 || remarksCol === -1 || withdrawalCol === -1 || depositCol === -1) {
+      console.error("❌ REQUIRED COLUMNS NOT FOUND!");
+      return Response.json({ 
+        error: "Required columns not found in sheet", 
+        headers 
       }, { status: 400 });
     }
 
-    const candidates: any[] = [];
+    const transactions: any[] = [];
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
 
-      const dateStr = String(row[dateCol] || '').trim();
-      const debitStr = String(row[debitCol] || '').trim();
-      const creditStr = String(row[creditCol] || '').trim();
-      const desc = String(row[descCol] || '').trim();
+      const dateCell = row[dateCol];
+      const remarksCell = row[remarksCol];
+      const withdrawalCell = row[withdrawalCol];
+      const depositCell = row[depositCol];
 
-      if (!dateStr || (!debitStr && !creditStr)) continue;
+      // Skip legend rows
+      if (typeof dateCell === 'string' && dateCell.includes('Legends')) continue;
+      if (!dateCell) continue;
 
-      const date = parseDate(dateStr);
-      if (!date || isNaN(date.getTime())) continue;
+      const txnDateStr = String(dateCell).trim();
+      const remarks = String(remarksCell || '').trim();
+      const withdrawal = cleanAmount(row[withdrawalCol]);
+      const deposit = cleanAmount(row[depositCol]);
 
-      // Determine if credit (inflow) or debit (outflow)
-      const creditAmount = parseAmount(creditStr);
-      const debitAmount = parseAmount(debitStr);
-      let amount: number | null = null;
-      let isCredit = false;
+      // 🔍 Debug log (visible in terminal)
+      console.log(`DEBUG Row ${i}: Date="${row[dateCol]}", Remarks="${row[remarksCol]}", Withdrawal=${withdrawal}, Deposit=${deposit}`);
 
-      if (creditAmount !== null && creditAmount > 0) {
-        amount = creditAmount;
-        isCredit = true;
-      } else if (debitAmount !== null && debitAmount > 0) {
-        amount = debitAmount;
-        isCredit = false;
-      } else {
-        continue;
+      // Apply your rule: ≥ ₹15,000
+      if (deposit >= 15000) {
+        transactions.push({
+          txn_date: parseIndianDate(txnDateStr),
+          amount: deposit,
+          flow_type: 'inflow',
+          category: categorize(remarks, 'inflow'),
+          description: remarks,
+          source_sheet: file.name,
+          financial_year: (parseInt(txnDateStr.split('/')[2]) >= 4) 
+            ? `${txnDateStr.split('/')[2]}-${String(parseInt(txnDateStr.split('/')[2]) + 1).slice(-2)}`
+            : `${String(parseInt(txnDateStr.split('/')[2]) - 1)}-${txnDateStr.split('/')[2].slice(-2)}`
+        });
+      } else if (withdrawal >= 15000) {
+        transactions.push({
+          txn_date: parseIndianDate(txnDateStr),
+          amount: withdrawal,
+          flow_type: 'outflow',
+          category: categorize(remarks, 'outflow'),
+          description: remarks,
+          source_sheet: file.name,
+          financial_year: (parseInt(txnDateStr.split('/')[2]) >= 4) 
+            ? `${txnDateStr.split('/')[2]}-${String(parseInt(txnDateStr.split('/')[2]) + 1).slice(-2)}`
+            : `${String(parseInt(txnDateStr.split('/')[2]) - 1)}-${txnDateStr.split('/')[2].slice(-2)}`
+        });
       }
-
-      // Skip tiny transactions (optional - can be enabled)
-      // if (amount < 1000) continue;
-
-      const { category, flow_type } = detectCategory(desc, amount, isCredit, accountType);
-
-      const financial_year = getFinancialYear(date);
-
-      candidates.push({
-        date: formatDateISO(date),
-        amount,
-        type: flow_type,  // Frontend expects 'type'
-        category,
-        description: desc,
-        account_type: accountType,
-        rawRow: i + 1,
-        financial_year,
-        source_sheet: sourceName
-      });
     }
 
-    // Separate inflows and outflows for frontend
-    const inflows = candidates.filter(c => c.type === 'inflow');
-    const outflows = candidates.filter(c => c.type === 'outflow');
-    const totalInflow = inflows.reduce((sum, c) => sum + c.amount, 0);
-    const totalOutflow = outflows.reduce((sum, c) => sum + c.amount, 0);
+    // Save to DB
+    let saved = 0;
+    let duplicateCount = 0;
+    
+    if (transactions.length > 0) {
+      for (const txn of transactions) {
+        try {
+          const result = await sql`
+            INSERT INTO cashflow_entries (
+              txn_date,
+              amount,
+              flow_type,
+              category,
+              description,
+              source_sheet,
+              financial_year
+            ) VALUES (
+              ${txn.txn_date}::date,
+              ${txn.amount}::numeric(12,2),
+              ${txn.flow_type},
+              ${txn.category},
+              ${txn.description},
+              ${txn.source_sheet},
+              ${txn.financial_year}
+            )
+            ON CONFLICT (txn_date, amount, description) DO NOTHING
+            RETURNING id
+          `;
 
-    return NextResponse.json({ 
+          if (result && result.length > 0) {
+            saved++;
+          } else {
+            duplicateCount++;
+          }
+        } catch (error: any) {
+          console.error('Error saving transaction:', error);
+          // Continue with next transaction
+        }
+      }
+    }
+
+    return Response.json({
       success: true,
-      candidates,
-      transactions: candidates,  // For compatibility
-      inflows,
-      outflows,
-      summary: {
-        totalInflow,
-        totalOutflow,
-        netBalance: totalInflow - totalOutflow,
-        inflowCount: inflows.length,
-        outflowCount: outflows.length
-      },
-      accountType,
-      source: sourceName,
-      message: `Detected ${candidates.length} transactions from ${accountType} account.`
+      saved,
+      duplicates: duplicateCount,
+      parsed: transactions.length,
+      message: saved > 0 ? `${saved} transactions saved` : 'No transactions saved'
     });
-
   } catch (err: any) {
-    console.error('Parse error:', err);
-    return NextResponse.json({ error: err.message || 'Failed to parse sheet' }, { status: 500 });
+    console.error('Upload error:', err);
+    return Response.json({ error: err.message || 'Upload failed' }, { status: 500 });
   }
 }

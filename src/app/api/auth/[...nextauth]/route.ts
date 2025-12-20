@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { sql } from '@/lib/db';
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -23,7 +23,7 @@ const handler = NextAuth({
             return null;
           }
 
-          // Check database for user
+          // Check database for user (using password column for verification)
           const users = await sql`
             SELECT id, email, password FROM users WHERE email = ${credentials.email.toLowerCase()}
           `;
@@ -40,7 +40,7 @@ const handler = NextAuth({
             return null;
           }
 
-          // Verify password
+          // Verify password using password column
           const isValid = bcrypt.compareSync(credentials.password, user.password);
           
           if (!isValid) {
@@ -91,7 +91,9 @@ const handler = NextAuth({
     strategy: 'jwt'
   },
   secret: process.env.NEXTAUTH_SECRET || 'loan_lens_secret_key_2024'
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
 

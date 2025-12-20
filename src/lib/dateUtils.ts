@@ -1,5 +1,21 @@
-// Universal date parser for Indian formats
-export function parseDate(input: string | number | Date): Date | null {
+// Parse date string to YYYY-MM-DD format (handles dd/mm/yyyy and Excel dates)
+export function parseDate(dateStr: string): string {
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  // Fallback for Excel dates
+  const excelDate = parseFloat(dateStr);
+  if (!isNaN(excelDate)) {
+    const utc = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+    return utc.toISOString().split('T')[0];
+  }
+  throw new Error(`Invalid date: ${dateStr}`);
+}
+
+// Legacy function: Parse date to Date object (for backward compatibility)
+export function parseDateToDate(input: string | number | Date): Date | null {
   if (!input) return null;
 
   // Already a Date

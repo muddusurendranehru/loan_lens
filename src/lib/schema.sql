@@ -41,19 +41,17 @@ CREATE TABLE transactions (
   amount NUMERIC(12, 2) NOT NULL,          -- Always in ₹
   flow_type TEXT NOT NULL CHECK (flow_type IN ('inflow', 'outflow')),
   
-  -- 📊 EBITDA CATEGORIES
+  -- 📊 Cashflow Categories (Indian Clinic Cashflow Analyzer)
   category TEXT NOT NULL CHECK (
     category IN (
-      'clinic_revenue',        -- HOMA Clinic income
-      'other_income',          -- Deposits, refunds, etc.
-      'bank_interest',         -- Interest paid to bank (outflow)
-      'rent',                  -- Office/clinic rent
-      'salaries',              -- Staff salaries
-      'emi_principal',         -- Principal portion of EMI
-      'emi_interest',          -- Interest portion of EMI → affects EBITDA
-      'vendor_payment',        -- Suppliers, utilities, etc.
-      'business_loan',         -- New loan received (inflow)
-      'personal'               -- Optional: personal spends (exclude from EBITDA)
+      'business_loan',         -- New business loan received (inflow)
+      'clinic_income',         -- Clinic income from salary/cbm (inflow)
+      'income',                -- Other income/deposits (inflow)
+      'emi',                   -- EMI payments (outflow)
+      'rent',                  -- Rent payments (outflow)
+      'tax',                   -- Tax payments (outflow)
+      'vendor_payment',        -- Vendor/supplier payments (outflow)
+      'transfer'               -- Large transfers (outflow)
     )
   ),
   
@@ -70,3 +68,32 @@ CREATE INDEX IF NOT EXISTS idx_txn_date ON transactions(txn_date);
 CREATE INDEX IF NOT EXISTS idx_txn_fy ON transactions(financial_year);
 CREATE INDEX IF NOT EXISTS idx_txn_category ON transactions(category);
 CREATE INDEX IF NOT EXISTS idx_txn_account ON transactions(account_type);
+
+-- TABLE 4: cashflow_entries (Cashflow Analyzer - Direct Save)
+CREATE TABLE IF NOT EXISTS cashflow_entries (
+  id SERIAL PRIMARY KEY,
+  txn_date DATE NOT NULL,
+  amount NUMERIC(12, 2) NOT NULL,          -- Always in ₹
+  flow_type TEXT NOT NULL CHECK (flow_type IN ('inflow', 'outflow')),
+  category TEXT NOT NULL CHECK (
+    category IN (
+      'business_loan',
+      'clinic_income',
+      'emi',
+      'rent',
+      'tax',
+      'vendor_payment'
+    )
+  ),
+  description TEXT,
+  source_sheet TEXT,
+  financial_year TEXT NOT NULL,            -- '2024-25'
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(txn_date, amount, description)    -- Prevent duplicate transactions
+);
+
+-- Indexes for cashflow_entries
+CREATE INDEX IF NOT EXISTS idx_cf_date ON cashflow_entries(txn_date);
+CREATE INDEX IF NOT EXISTS idx_cf_fy ON cashflow_entries(financial_year);
+CREATE INDEX IF NOT EXISTS idx_cf_category ON cashflow_entries(category);
+CREATE INDEX IF NOT EXISTS idx_cf_flow_type ON cashflow_entries(flow_type);
