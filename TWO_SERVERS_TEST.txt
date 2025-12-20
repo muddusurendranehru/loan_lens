@@ -1,0 +1,79 @@
+========================================
+TEST LOCALLY - PowerShell Commands
+========================================
+
+⚠️  IMPORTANT: Next.js runs BOTH frontend and backend on ONE server!
+   You don't need 2 separate servers.
+
+========================================
+OPTION 1: Start Server (One Command)
+========================================
+
+Run this in PowerShell:
+.\TEST_LOCAL.ps1
+
+This starts the Next.js server which handles:
+• Frontend (http://localhost:3000)
+• Backend API (http://localhost:3000/api/*)
+
+========================================
+OPTION 2: Manual Start (Step by Step)
+========================================
+
+# Terminal 1: Start Server
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+# Terminal 2: Test Backend (NEW PowerShell window)
+.\TEST_BACKEND.ps1
+
+# Terminal 3: Open Frontend (NEW PowerShell window)
+.\TEST_FRONTEND.ps1
+
+========================================
+OPTION 3: Quick Test Commands
+========================================
+
+# Start server
+cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
+
+# In NEW PowerShell window - Test backend:
+curl http://localhost:3000/api/db/test-connection
+
+# In NEW PowerShell window - Open frontend:
+Start-Process http://localhost:3000
+
+========================================
+TEST CHECKLIST
+========================================
+
+✅ Server Running:
+   - Check: http://localhost:3000 shows Next.js page
+
+✅ Backend API Working:
+   - Test: curl http://localhost:3000/api/db/test-connection
+   - Should return: {"status":"connected"}
+
+✅ Frontend Pages:
+   - Login: http://localhost:3000/login
+   - Dashboard: http://localhost:3000/dashboard (after login)
+
+✅ Authentication:
+   - Email: admin@homa.clinic
+   - Password: securepassword123
+
+========================================
+TROUBLESHOOTING
+========================================
+
+❌ Port 3000 in use:
+   .\CLEAN_START.ps1
+
+❌ Lock file error:
+   Remove-Item .next\dev\lock -Recurse -Force
+
+❌ Database connection error:
+   Check .env.local has correct DATABASE_URL
+
+========================================
+

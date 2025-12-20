@@ -1,0 +1,92 @@
+========================================
+QUICK FIX FOR PRODUCTION ERROR
+========================================
+
+ERROR: "null value in column 'phone' violates not-null constraint"
+
+ROOT CAUSE: Production database has phone column as NOT NULL,
+but your code doesn't insert phone (only email and password).
+
+========================================
+SOLUTION (Choose One)
+========================================
+
+OPTION 1: Make Phone Optional (Recommended - 30 seconds)
+----------------------------------------------------------
+1. Go to Neon Console: https://console.neon.tech
+2. Select your project → SQL Editor
+3. Run this SQL:
+
+   ALTER TABLE users ALTER COLUMN phone DROP NOT NULL;
+
+4. Done! Test signup again.
+
+OPTION 2: Remove Phone Column (If you don't need it)
+----------------------------------------------------
+1. Go to Neon Console → SQL Editor
+2. Run this SQL:
+
+   ALTER TABLE users DROP COLUMN IF EXISTS phone;
+
+3. Done! But phone data will be lost.
+
+========================================
+VERIFY THE FIX
+========================================
+
+After running the SQL, verify in Neon Console:
+
+SELECT column_name, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'users' AND column_name = 'phone';
+
+Expected: is_nullable = 'YES' (or column doesn't exist)
+
+========================================
+TEST AFTER FIX
+========================================
+
+# Test via API
+curl -X POST https://loan-lens-bm36.onrender.com/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123456"}'
+
+# Or use PowerShell script
+.\TEST_PRODUCTION.ps1
+
+========================================
+WHAT I'VE ADDED TO HELP
+========================================
+
+✅ Enhanced error logging in signup route
+   - Now shows detailed error messages
+   - Includes PostgreSQL error codes
+   - Better debugging info
+
+✅ Diagnostic API endpoint
+   - GET /api/db/check-schema
+   - Shows actual database schema
+   - Helps identify mismatches
+
+✅ Production fix guide
+   - PRODUCTION_FIX_GUIDE.md
+   - Step-by-step instructions
+   - Multiple solution options
+
+✅ Test script
+   - TEST_PRODUCTION.ps1
+   - Tests production API
+   - Shows detailed error messages
+
+========================================
+NEXT STEPS
+========================================
+
+1. Run the SQL fix (Option 1 recommended)
+2. Test signup API
+3. Check Render logs (should see better errors now)
+4. If still failing, run diagnostic endpoint:
+   curl https://loan-lens-bm36.onrender.com/api/db/check-schema
+
+========================================
+

@@ -1,0 +1,52 @@
+========================================
+QUICK INSTALL - New Dependencies
+========================================
+
+The signup API now uses:
+  - pg (PostgreSQL driver)
+  - bcrypt (Password hashing)
+
+You need to install these:
+
+========================================
+INSTALL COMMAND
+========================================
+
+npm install
+
+========================================
+WHAT GETS INSTALLED
+========================================
+
+Dependencies:
+  ✅ pg: ^8.11.3
+  ✅ bcrypt: ^5.1.1
+
+Dev Dependencies:
+  ✅ @types/pg: ^8.11.0
+  ✅ @types/bcrypt: ^5.0.2
+
+========================================
+AFTER INSTALLATION
+========================================
+
+1. Start server:
+   npm run dev
+
+2. Test signup:
+   http://localhost:3000/signup
+
+3. Or test API directly:
+   curl -X POST http://localhost:3000/api/auth/signup `
+     -H "Content-Type: application/json" `
+     -d '{\"email\":\"test@example.com\",\"password\":\"test123456\"}'
+
+========================================
+NOTE
+========================================
+
+The linter error about 'bcrypt' will go away
+after running: npm install
+
+========================================
+

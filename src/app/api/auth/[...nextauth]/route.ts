@@ -1,7 +1,12 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { sql } from '@/lib/db';
+import bcrypt from 'bcrypt';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 const handler = NextAuth({
   providers: [
@@ -24,16 +29,17 @@ const handler = NextAuth({
           }
 
           // Check database for user
-          const users = await sql`
-            SELECT id, email, password FROM users WHERE email = ${credentials.email.toLowerCase()}
-          `;
+          const result = await pool.query(
+            'SELECT id, email, password FROM users WHERE email = $1',
+            [credentials.email.toLowerCase()]
+          );
 
-          if (!users || users.length === 0) {
+          if (!result.rows || result.rows.length === 0) {
             console.log('User not found:', credentials.email);
             return null;
           }
 
-          const user = users[0];
+          const user = result.rows[0];
 
           if (!user.password) {
             console.error('User has no password set');

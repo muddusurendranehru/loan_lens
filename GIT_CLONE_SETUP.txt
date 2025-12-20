@@ -1,0 +1,86 @@
+========================================
+GIT CLONE & SETUP COMMANDS
+========================================
+
+# Step 1: Clone Repository
+git clone https://github.com/muddusurendranehru/loan_lens.git
+cd loan_lens
+
+# Step 2: Install Dependencies
+npm install
+
+# Step 3: Create .env.local
+# Copy your DATABASE_URL and NEXTAUTH_SECRET from Neon Console
+
+# Step 4: Start Server
+npm run dev
+
+# Step 5: Open Browser
+# http://localhost:3000
+
+========================================
+QUICK SETUP (PowerShell)
+========================================
+
+cd C:\Users\MYPC\Desktop
+git clone https://github.com/muddusurendranehru/loan_lens.git
+cd loan_lens
+npm install
+.\QUICK_SETUP.ps1
+
+========================================
+WHAT WAS ADDED
+========================================
+
+✅ Signup API Route: src/app/api/auth/signup/route.ts
+   - Creates new users in database
+   - Validates email and password
+   - Hashes password with bcryptjs
+   - Handles duplicate email errors
+
+✅ Signup Page: src/app/signup/page.tsx
+   - Email, Password, Confirm Password fields
+   - Client-side validation
+   - Redirects to login after success
+
+✅ Updated Login Page: src/app/login/page.tsx
+   - Shows success message after signup
+   - Link to signup page
+
+✅ Setup Guide: SETUP_GUIDE.md
+   - Complete installation instructions
+   - Environment variables setup
+   - Database schema setup
+   - Troubleshooting guide
+
+✅ Quick Setup Script: QUICK_SETUP.ps1
+   - Automated setup script
+   - Checks environment
+   - Creates .env.local template
+
+========================================
+TEST SIGNUP
+========================================
+
+# Via Browser
+1. Go to: http://localhost:3000/signup
+2. Enter email and password
+3. Click "Sign Up"
+4. Redirects to login
+
+# Via API (curl)
+curl -X POST http://localhost:3000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123456"}'
+
+========================================
+NEXT STEPS
+========================================
+
+1. Test signup page: http://localhost:3000/signup
+2. Create a test user
+3. Login with new user
+4. Test dashboard functionality
+
+========================================
+

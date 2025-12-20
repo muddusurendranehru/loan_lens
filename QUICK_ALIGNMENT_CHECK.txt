@@ -1,0 +1,102 @@
+========================================
+QUICK ALIGNMENT CHECK - Step by Step
+========================================
+
+Run this PowerShell command:
+.\VERIFY_ALIGNMENT.ps1
+
+OR run this Node.js command:
+node VERIFY_ALIGNMENT.js
+
+========================================
+MANUAL CHECK (If Scripts Don't Work)
+========================================
+
+STEP 1: Check .env.local
+-------------------------
+File: .env.local
+Must have:
+  ✅ DATABASE_URL=postgresql://...
+  ✅ NEXTAUTH_SECRET=...
+  ✅ NEXTAUTH_URL=http://localhost:3000
+
+STEP 2: Check Database Schema
+------------------------------
+Go to Neon Console → SQL Editor → Run:
+
+SELECT column_name, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'users' 
+ORDER BY ordinal_position;
+
+CRITICAL: phone column must be NULLABLE (is_nullable = 'YES')
+
+If NOT NULL, run:
+ALTER TABLE users ALTER COLUMN phone DROP NOT NULL;
+
+STEP 3: Check Signup API
+-------------------------
+File: src/app/api/auth/signup/route.ts
+
+Must have:
+  ✅ INSERT INTO users (email, password)
+  ✅ Does NOT insert phone
+  ✅ Uses bcryptjs to hash password
+
+Check:
+Get-Content src/app/api/auth/signup/route.ts | Select-String "INSERT INTO users"
+
+STEP 4: Check Frontend Signup
+------------------------------
+File: src/app/signup/page.tsx
+
+Must have:
+  ✅ Calls /api/auth/signup
+  ✅ Has email and password fields
+
+Check:
+Get-Content src/app/signup/page.tsx | Select-String "/api/auth/signup"
+
+STEP 5: Check Database Connection
+-----------------------------------
+File: src/lib/db.ts
+
+Must have:
+  ✅ Uses process.env.DATABASE_URL
+  ✅ Exports sql
+
+STEP 6: Check Dependencies
+--------------------------
+File: package.json
+
+Must have:
+  ✅ @neondatabase/serverless
+  ✅ bcryptjs
+  ✅ next-auth
+
+========================================
+COMMON ISSUES & FIXES
+========================================
+
+ISSUE: Phone column NOT NULL
+FIX: ALTER TABLE users ALTER COLUMN phone DROP NOT NULL;
+
+ISSUE: Missing DATABASE_URL
+FIX: Create .env.local with DATABASE_URL from Neon Console
+
+ISSUE: Signup API inserts phone
+FIX: Change INSERT to only include (email, password)
+
+ISSUE: Frontend calls wrong API
+FIX: Update signup page to call /api/auth/signup
+
+========================================
+VERIFICATION FILES CREATED
+========================================
+
+✅ VERIFY_ALIGNMENT.js - Node.js verification script
+✅ VERIFY_ALIGNMENT.ps1 - PowerShell verification script
+✅ ALIGNMENT_CHECK_GUIDE.md - Detailed guide
+
+========================================
+

@@ -1,0 +1,50 @@
+========================================
+QUICK TEST - Complete Commands
+========================================
+
+⚠️  You're in the wrong directory!
+   Current: C:\Users\MYPC
+   Needed:  C:\Users\MYPC\Desktop\loan_lens
+
+========================================
+OPTION 1: Navigate First (Recommended)
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens
+.\QUICK_TEST.ps1
+
+========================================
+OPTION 2: Run from Anywhere
+========================================
+
+C:\Users\MYPC\Desktop\loan_lens\QUICK_TEST.ps1
+
+========================================
+OPTION 3: One-Line Command
+========================================
+
+cd C:\Users\MYPC\Desktop\loan_lens; .\QUICK_TEST.ps1
+
+========================================
+OPTION 4: Manual Test (No Script)
+========================================
+
+# Navigate to project
+cd C:\Users\MYPC\Desktop\loan_lens
+
+# Test backend
+curl http://localhost:3000/api/db/test-connection
+
+# Open frontend
+Start-Process http://localhost:3000
+
+========================================
+QUICK REFERENCE
+========================================
+
+Project Path: C:\Users\MYPC\Desktop\loan_lens
+Server URL:   http://localhost:3000
+Login:        admin@homa.clinic / securepassword123
+
+========================================
+
