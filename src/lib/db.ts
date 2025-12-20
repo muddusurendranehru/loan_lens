@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
 
-export default neon(process.env.DATABASE_URL!);
+const sql = neon(process.env.DATABASE_URL!);
+export default sql;  // ← default export
 
