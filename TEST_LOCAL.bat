@@ -1,25 +1,28 @@
 @echo off
+REM Complete Local Test Commands
+REM Copy and paste these commands
+
 echo ========================================
-echo LoanLens Pro - Local Testing Commands
+echo LOAN LENS - LOCAL TESTING
 echo ========================================
 echo.
-
-cd /d "C:\Users\pc\Desktop\loan_lens\loan_lens"
-
-echo [1] Checking server status...
-powershell -Command "Test-NetConnection -ComputerName localhost -Port 3000 -WarningAction SilentlyContinue | Select-Object TcpTestSucceeded"
-
+echo METHOD 1: Start Server (Window 1)
+echo ---------------------------------
+echo cd C:\Users\MYPC\Desktop\loan_lens
+echo npm run dev
 echo.
-echo [2] Testing Report API...
-curl http://localhost:3000/api/report/cashflow?financial_year=2024-25
-
+echo METHOD 2: Test in Browser (Window 2)
+echo --------------------------------------
+echo Open browser and go to:
+echo http://localhost:3001/signup
+echo http://localhost:3001/login
+echo http://localhost:3001/dashboard
 echo.
-echo [3] Database connection test...
-node test-db-connection.js
-
+echo METHOD 3: Run Automated Tests
+echo -------------------------------
+echo cd C:\Users\MYPC\Desktop\loan_lens
+echo node test-signup-login-dashboard.js
 echo.
 echo ========================================
-echo Testing complete!
-echo ========================================
+echo.
 pause
-

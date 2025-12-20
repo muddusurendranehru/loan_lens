@@ -1,0 +1,87 @@
+========================================
+HOW TO RUN TESTS - SIMPLE GUIDE
+========================================
+
+METHOD 1: EASIEST (Double-Click)
+---------------------------------
+1. Go to: C:\Users\MYPC\Desktop\loan_lens
+2. Double-click: RUN_TESTS.bat
+   OR
+   Double-click: QUICK_START.bat
+
+That's it! Server starts and tests run automatically.
+
+
+METHOD 2: PowerShell (Full Path)
+---------------------------------
+Open PowerShell and type:
+
+C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1
+
+If you get an error about execution policy, use:
+
+powershell -ExecutionPolicy Bypass -File "C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1"
+
+
+METHOD 3: Command Prompt (CMD)
+-------------------------------
+Open Command Prompt and type:
+
+cd C:\Users\MYPC\Desktop\loan_lens
+RUN_TESTS.bat
+
+
+METHOD 4: Manual (2 Windows)
+-----------------------------
+Window 1 - Start Server:
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+Window 2 - Run Tests:
+cd C:\Users\MYPC\Desktop\loan_lens
+node test-signup-login-dashboard.js
+
+
+========================================
+FULL PATHS (Copy & Paste)
+========================================
+
+Project Folder:
+C:\Users\MYPC\Desktop\loan_lens
+
+Test Script:
+C:\Users\MYPC\Desktop\loan_lens\test-signup-login-dashboard.js
+
+PowerShell Script:
+C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1
+
+Batch File:
+C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.bat
+
+
+========================================
+QUICK REFERENCE
+========================================
+
+Server URL: http://localhost:3001
+Signup:     http://localhost:3001/signup
+Login:      http://localhost:3001/login
+Dashboard:  http://localhost:3001/dashboard
+
+
+========================================
+TROUBLESHOOTING
+========================================
+
+If PowerShell won't run:
+powershell -ExecutionPolicy Bypass -File "C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1"
+
+If port 3001 is busy:
+netstat -ano | findstr :3001
+taskkill /PID [PID_NUMBER] /F
+
+If tests fail:
+1. Make sure server is running
+2. Wait 10-15 seconds after starting server
+3. Check .env.local exists in: C:\Users\MYPC\Desktop\loan_lens\.env.local
+

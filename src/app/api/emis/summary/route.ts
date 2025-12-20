@@ -1,76 +1,25 @@
-import { sql } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
 
-// GET: Summary of EMIs by financial year and loan type
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const financial_year = searchParams.get('financial_year');
-
-    // Get summary by financial year
-    const yearSummary = await sql`
+    const emis = await db`
       SELECT 
-        financial_year,
-        COUNT(*) as total_emis,
-        SUM(amount) as total_amount,
-        COUNT(DISTINCT loan_ref_id) as unique_loans
-      FROM loan_emis
-      ${financial_year ? sql`WHERE financial_year = ${financial_year}` : sql``}
-      GROUP BY financial_year
-      ORDER BY financial_year DESC
+        id, 
+        amount, 
+        remark, 
+        transaction_date,
+        flow_type,
+        account_type
+      FROM transactions
+      WHERE flow_type = 'outflow'
+        AND (remark ILIKE '%emi%' OR remark ILIKE '%loan%')
+      ORDER BY transaction_date DESC;
     `;
-
-    // Get summary by loan type
-    const typeSummary = await sql`
-      SELECT 
-        loan_type,
-        COUNT(*) as total_emis,
-        SUM(amount) as total_amount,
-        COUNT(DISTINCT loan_ref_id) as unique_loans
-      FROM loan_emis
-      ${financial_year ? sql`WHERE financial_year = ${financial_year}` : sql``}
-      GROUP BY loan_type
-      ORDER BY total_amount DESC
-    `;
-
-    // Get summary by loan reference
-    const loanSummary = await sql`
-      SELECT 
-        loan_ref_id,
-        loan_type,
-        COUNT(*) as total_emis,
-        SUM(amount) as total_amount,
-        MIN(emi_date) as first_emi,
-        MAX(emi_date) as last_emi
-      FROM loan_emis
-      ${financial_year ? sql`WHERE financial_year = ${financial_year}` : sql``}
-      GROUP BY loan_ref_id, loan_type
-      ORDER BY total_amount DESC
-    `;
-
-    // Get grand totals
-    const grandTotal = await sql`
-      SELECT 
-        COUNT(*) as total_emis,
-        COALESCE(SUM(amount), 0) as total_amount,
-        COUNT(DISTINCT loan_ref_id) as unique_loans,
-        COUNT(DISTINCT financial_year) as years_covered
-      FROM loan_emis
-      ${financial_year ? sql`WHERE financial_year = ${financial_year}` : sql``}
-    `;
-
-    return NextResponse.json({ 
-      success: true,
-      summary: {
-        grandTotal: grandTotal[0],
-        byFinancialYear: yearSummary,
-        byLoanType: typeSummary,
-        byLoan: loanSummary
-      }
-    });
+    return NextResponse.json({ emis });
   } catch (err) {
-    console.error('Summary API error:', err);
-    return NextResponse.json({ error: 'Summary fetch failed' }, { status: 500 });
+    console.error('EMI summary error:', err);
+    return NextResponse.json({ error: 'Failed to load EMI data' }, { status: 500 });
   }
 }
 

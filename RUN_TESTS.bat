@@ -1,10 +1,15 @@
 @echo off
+REM Run Tests - Simple Batch File
+REM Double-click this file or run from command prompt
+
+cd /d "C:\Users\MYPC\Desktop\loan_lens"
+
 echo ========================================
 echo LoanLens - Start Server ^& Test
 echo ========================================
 echo.
-
-cd /d "C:\Users\MYPC\Desktop\loan_lens"
+echo Project Path: C:\Users\MYPC\Desktop\loan_lens
+echo.
 
 echo Cleaning up old processes...
 taskkill /F /IM node.exe >nul 2>&1
@@ -16,7 +21,7 @@ echo.
 echo 🚀 Starting Next.js server on http://localhost:3001...
 echo.
 
-start "LoanLens Server" cmd /k "npm run dev"
+start "LoanLens Server" cmd /k "cd /d C:\Users\MYPC\Desktop\loan_lens && npm run dev"
 
 echo ⏳ Waiting for server to start (10 seconds)...
 timeout /t 10 >nul
@@ -25,6 +30,7 @@ echo.
 echo 🧪 Running tests...
 echo.
 
+cd /d "C:\Users\MYPC\Desktop\loan_lens"
 node test-signup-login-dashboard.js
 
 echo.
@@ -44,3 +50,4 @@ echo.
 echo ✅ Tests complete! Check server window for status.
 echo.
 pause
+

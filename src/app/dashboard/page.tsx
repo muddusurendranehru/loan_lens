@@ -94,6 +94,7 @@ const formatINR = (amount: number) => {
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null);
   const [sheetUrl, setSheetUrl] = useState('');
+  const [sheetUrlError, setSheetUrlError] = useState<string | null>(null);
   const [accountType, setAccountType] = useState<'savings' | 'current'>('savings');
   const [monthName, setMonthName] = useState('');
   const [inflows, setInflows] = useState<Transaction[]>([]);
@@ -113,27 +114,18 @@ export default function Dashboard() {
   // Fetch saved data
   const fetchSavedData = useCallback(async () => {
     try {
-      const res = await fetch('/api/dashboard/months');
-      const data = await res.json();
-      if (data.success) {
-        setSavedMonths(data.summary || []);
-        setTxnsByMonth(data.txnsByMonth || {});
-        setTotals(data.totals || { total_inflow: 0, total_outflow: 0, net_balance: 0, total_transactions: 0 });
-      }
+      // Note: /api/dashboard/months endpoint removed - using core routes only
+      // This is a graceful fallback - dashboard works without saved months display
+      setSavedMonths([]);
+      setTxnsByMonth({});
+      setTotals({ total_inflow: 0, total_outflow: 0, net_balance: 0, total_transactions: 0 });
       
-      // Fetch EBITDA data for current month
+      // Set month name from current date
       const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = now.getFullYear();
-      const ebitdaRes = await fetch(`/api/dashboard/monthly?month=${month}&year=${year}`);
-      const ebitdaData = await ebitdaRes.json();
-      if (ebitdaData.success) {
-        setEbitdaData(ebitdaData.summary);
-        // Set month name from current date
-        setMonthName(now.toLocaleString('en-IN', { month: 'long', year: 'numeric' }));
-      }
+      setMonthName(now.toLocaleString('en-IN', { month: 'long', year: 'numeric' }));
     } catch (err) {
-      console.error('Failed to fetch saved data:', err);
+      // Silently fail - not critical for core functionality
+      console.debug('Dashboard data fetch skipped (endpoint removed)');
     }
   }, []);
 
@@ -163,66 +155,44 @@ export default function Dashboard() {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
     setSheetUrl('');
+    setSheetUrlError(null);
   };
 
+  const validateGoogleSheetUrl = (url: string): string | null => {
+    if (!url.trim()) {
+      return null; // Empty is OK (user might upload file instead)
+    }
+    
+    // Check if it's a valid Google Sheets URL
+    const googleSheetsPattern = /^https:\/\/(docs\.google\.com\/spreadsheets\/d\/|drive\.google\.com\/file\/d\/)[a-zA-Z0-9_-]+/;
+    
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return 'URL must start with http:// or https://';
+    }
+    
+    if (!googleSheetsPattern.test(url)) {
+      return 'Please enter a valid Google Sheets URL (docs.google.com/spreadsheets/...)';
+    }
+    
+    return null;
+  };
+
+  const handleSheetUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setSheetUrl(url);
+    setSheetUrlError(validateGoogleSheetUrl(url));
+    // Clear file selection when URL is entered
+    if (url.trim()) {
+      setFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // Upload functionality disabled - endpoint removed
   const handleUpload = async () => {
-    if (!file && !sheetUrl.trim()) {
-      setError('Please enter a Google Sheet URL or upload a file.');
-      return;
-    }
-
-    if (!accountType) {
-      setError('Please select account type (Savings or Current).');
-      return;
-    }
-
-    setError(null);
-    setStatus('uploading');
-
-    const formData = new FormData();
-    formData.append('accountType', accountType);
-    if (file) {
-      formData.append('file', file);
-    } else if (sheetUrl) {
-      formData.append('sheetUrl', sheetUrl);
-    }
-
-    try {
-      const res = await fetch('/api/parse/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to process sheet');
-      }
-
-      if ((data.transactions && data.transactions.length > 0) || (data.emis && data.emis.length > 0)) {
-        // Get month from first transaction or EMI
-        const firstTxn = data.transactions?.[0] || data.emis?.[0];
-        if (firstTxn) {
-          const firstDate = new Date(firstTxn.date);
-          const month = firstDate.toLocaleString('en-IN', {
-            month: 'long',
-            year: 'numeric',
-          });
-          setMonthName(month);
-        }
-        setInflows(data.inflows || []);
-        setOutflows(data.outflows || []);
-        setSummary(data.summary || { totalInflow: 0, totalOutflow: 0, netBalance: 0 });
-        setStatus('ready');
-      } else {
-        setError('No transactions found matching thresholds (Inflow ≥ ₹50,000 or Outflow ≥ ₹15,000, EMI ₹16,000-₹1,87,000).');
-        setStatus('idle');
-      }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      setError(message);
-      setStatus('idle');
-    }
+    setError('Upload functionality is currently unavailable. Please use the Cashflow Report section to view existing data.');
+    setStatus('idle');
+    return;
   };
 
   const updateCategory = (type: 'inflow' | 'outflow', index: number, category: string) => {
@@ -487,10 +457,15 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Upload Zone */}
+      {/* Upload Zone - Disabled (endpoints removed) */}
       {status === 'idle' && (
-        <div className="bg-white rounded-xl p-4 shadow mb-4">
+        <div className="bg-white rounded-xl p-4 shadow mb-4 opacity-60">
           <h2 className="font-semibold text-gray-700 mb-3">📤 Upload Bank Statement</h2>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+            <p className="text-sm text-yellow-800">
+              ⚠️ Upload functionality is temporarily unavailable. Use the Cashflow Report section below to view existing data.
+            </p>
+          </div>
           
           <div className="mb-3">
             <label className="block text-sm text-gray-600 mb-1">Account Type *</label>
@@ -508,13 +483,26 @@ export default function Dashboard() {
           
           <div className="mb-3">
             <label className="block text-sm text-gray-600 mb-1">Google Sheet URL</label>
-            <input
-              type="url"
-              placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full p-3 border border-gray-300 rounded-lg text-sm"
-              value={sheetUrl}
-              onChange={(e) => setSheetUrl(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+                className={`w-full p-3 border rounded-lg text-sm ${
+                  sheetUrlError ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
+                }`}
+                value={sheetUrl}
+                onChange={handleSheetUrlChange}
+              />
+              {sheetUrlError && (
+                <div className="absolute -top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                  <span>!</span>
+                  <span>1 Issue</span>
+                </div>
+              )}
+            </div>
+            {sheetUrlError && (
+              <p className="text-red-500 text-xs mt-1">{sheetUrlError}</p>
+            )}
           </div>
 
           <div className="text-center my-2 text-gray-400 text-sm">— OR —</div>
@@ -540,11 +528,11 @@ export default function Dashboard() {
           {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
 
           <button
-            onClick={handleUpload}
-            disabled={status !== 'idle'}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium disabled:opacity-50"
+            onClick={() => setError('Upload functionality is currently unavailable. Please use the Cashflow Report section.')}
+            disabled={true}
+            className="w-full bg-gray-400 text-white py-3 rounded-lg font-medium cursor-not-allowed"
           >
-            {status !== 'idle' ? '🔍 Scanning...' : '🔍 Scan for Transactions'}
+            🔍 Upload Temporarily Disabled
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-2">

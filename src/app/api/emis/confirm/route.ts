@@ -1,4 +1,4 @@
-import { sql } from '@/lib/db';
+import db from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Helper: compute Indian financial year (Apr–Mar)
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       const financial_year = getFinancialYear(emiDate);
 
       try {
-        const result = await sql`
+        const result = await db`
           INSERT INTO loan_emis (
             emi_date, amount, loan_ref_id, loan_type,
             source_description, source_sheet_name, source_row_number, financial_year

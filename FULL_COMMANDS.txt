@@ -1,53 +1,78 @@
 ========================================
-FULL COMMANDS - COPY & PASTE EXACTLY
+COMPLETE TESTING COMMANDS - FULL PATHS
 ========================================
 
-COMMAND 1: Start Server (Full Path)
-------------------------------------
-Copy this ENTIRE line and paste in PowerShell:
-
-cd C:\Users\MYPC\Desktop\loan_lens; npm run dev
-
-
-COMMAND 2: Start Server (Alternative)
----------------------------------------
-Copy this ENTIRE line and paste in PowerShell:
-
-cd C:\Users\MYPC\Desktop\loan_lens && npm run dev
-
-
-COMMAND 3: Start Server (PowerShell Full)
-------------------------------------------
-Copy this ENTIRE line and paste in PowerShell:
-
-Set-Location C:\Users\MYPC\Desktop\loan_lens; npm run dev
-
-
-COMMAND 4: Start Server (With Node Direct)
+OPTION 1: Double-Click Batch File (Easiest)
 -------------------------------------------
-Copy this ENTIRE line and paste in PowerShell:
+Just double-click: RUN_TESTS.bat
 
-cd C:\Users\MYPC\Desktop\loan_lens; node_modules\.bin\next dev
+
+OPTION 2: PowerShell with Full Path
+-----------------------------------
+Open PowerShell and run:
+
+C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1
+
+Or if execution policy blocks it:
+
+powershell -ExecutionPolicy Bypass -File "C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1"
+
+
+OPTION 3: Command Prompt (CMD)
+-------------------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+RUN_TESTS.bat
+
+
+OPTION 4: Manual Step-by-Step (2 Terminals)
+-------------------------------------------
+
+TERMINAL 1 - Start Server:
+--------------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+TERMINAL 2 - Run Tests:
+-----------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+node test-signup-login-dashboard.js
+
+
+OPTION 5: PowerShell Manual
+---------------------------
+cd C:\Users\MYPC\Desktop\loan_lens
+npm run dev
+
+(Then in another terminal)
+cd C:\Users\MYPC\Desktop\loan_lens
+node test-signup-login-dashboard.js
 
 
 ========================================
-VERIFY COMMAND
+QUICK REFERENCE
 ========================================
 
-After server starts, test with:
+Project Path: C:\Users\MYPC\Desktop\loan_lens
+Server URL:   http://localhost:3001
+Test Script:  C:\Users\MYPC\Desktop\loan_lens\test-signup-login-dashboard.js
 
-curl http://localhost:3000 -UseBasicParsing
-
-OR open browser:
-http://localhost:3000
-
-
-========================================
-STOP SERVER
-========================================
-
-Press: Ctrl+C
+Signup:   http://localhost:3001/signup
+Login:    http://localhost:3001/login
+Dashboard: http://localhost:3001/dashboard
 
 
 ========================================
+TROUBLESHOOTING
+========================================
 
+If PowerShell script won't run:
+powershell -ExecutionPolicy Bypass -File "C:\Users\MYPC\Desktop\loan_lens\RUN_TESTS.ps1"
+
+If port 3001 is busy:
+netstat -ano | findstr :3001
+taskkill /PID [PID_NUMBER] /F
+
+If tests fail:
+1. Make sure server is running (check Terminal 1)
+2. Wait 10-15 seconds after starting server
+3. Check .env.local exists in project folder

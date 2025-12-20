@@ -30,7 +30,9 @@ Create/update `.env.local` with ALL variables:
 # ============================================
 # DATABASE (REQUIRED)
 # ============================================
-DATABASE_URL=postgresql://neondb_owner:npg_zUbO5HZ9kDur@ep-icy-dream-ah5xlk96-pooler.us-east-1.aws.neon.tech/loan_lens?sslmode=require
+# Format: postgres://user:password@host.neon.tech/dbname?sslmode=require
+# Get connection string from: https://console.neon.tech
+DATABASE_URL=postgres://user:password@host.neon.tech/yourdb?sslmode=require
 
 # ============================================
 # AUTHENTICATION (REQUIRED)
@@ -58,12 +60,14 @@ GOOGLE_PRIVATE_KEY=
 $env:DATABASE_URL
 ```
 
+**Format:** `postgres://user:password@host.neon.tech/dbname?sslmode=require`
+
 **Should contain:**
-- `postgresql://` or `postgres://`
-- `neondb_owner` (username)
-- `ep-icy-dream-ah5xlk96-pooler.us-east-1.aws.neon.tech` (host)
-- `loan_lens` (database name)
-- `?sslmode=require` (SSL mode)
+- `postgresql://` or `postgres://` (both work)
+- Username (e.g., `neondb_owner`)
+- Host (e.g., `ep-icy-dream-ah5xlk96-pooler.us-east-1.aws.neon.tech`)
+- Database name (e.g., `loan_lens` or `yourdb`)
+- `?sslmode=require` (SSL mode - required for Neon)
 
 ### 2. Check JWT Secrets
 ```bash

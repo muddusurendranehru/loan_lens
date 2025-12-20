@@ -1,8 +1,6 @@
 // src/app/api/report/cashflow/route.ts
 import { NextRequest } from 'next/server';
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL!);
+import db from '@/lib/db';
 
 // Helper function to get readable category labels
 function getCategoryLabel(category: string, flow: string): string {
@@ -25,10 +23,10 @@ function getCategoryLabel(category: string, flow: string): string {
 
 // Helper function to get month name from financial year
 // This will be enhanced to get the actual month from transactions
-async function getMonthFromFinancialYear(fy: string, sql: any): Promise<string> {
+async function getMonthFromFinancialYear(fy: string): Promise<string> {
   try {
     // Try to get the most recent transaction date
-    const monthResult = await sql`
+    const monthResult = await db`
       SELECT MAX(txn_date) as latest_date
       FROM cashflow_entries
       WHERE financial_year = ${fy}
@@ -63,14 +61,14 @@ export async function GET(req: NextRequest) {
     const month = searchParams.get('month'); // e.g., '10' for October
 
     // Build WHERE clause
-    let whereClause = sql`financial_year = ${financial_year}`;
+    let whereClause = db`financial_year = ${financial_year}`;
     if (month) {
       const monthNum = parseInt(month);
-      whereClause = sql`${whereClause} AND EXTRACT(MONTH FROM txn_date) = ${monthNum}`;
+      whereClause = db`${whereClause} AND EXTRACT(MONTH FROM txn_date) = ${monthNum}`;
     }
 
     // ✅ Summary
-    const summaryRes = await sql`
+    const summaryRes = await db`
       SELECT
         COALESCE(SUM(CASE WHEN flow_type = 'inflow' THEN amount ELSE 0 END), 0) AS total_inflow,
         COALESCE(SUM(CASE WHEN flow_type = 'outflow' THEN amount ELSE 0 END), 0) AS total_outflow,
@@ -83,7 +81,7 @@ export async function GET(req: NextRequest) {
     const summary = summaryRes[0] || { total_inflow: 0, total_outflow: 0, inflow_count: 0, outflow_count: 0 };
 
     // ✅ Category breakdown
-    const categoryRes = await sql`
+    const categoryRes = await db`
       SELECT 
         category,
         flow_type,
@@ -96,7 +94,7 @@ export async function GET(req: NextRequest) {
     `;
 
     // ✅ All transactions
-    const transactionsRes = await sql`
+    const transactionsRes = await db`
       SELECT 
         id,
         txn_date,
@@ -151,7 +149,7 @@ export async function GET(req: NextRequest) {
       ];
       // Get year from most recent transaction or use current year
       try {
-        const yearResult = await sql`
+        const yearResult = await db`
           SELECT EXTRACT(YEAR FROM MAX(txn_date)) as year
           FROM cashflow_entries
           WHERE ${whereClause}
@@ -162,7 +160,7 @@ export async function GET(req: NextRequest) {
         monthName = `${months[monthNum - 1]} ${new Date().getFullYear()}`;
       }
     } else {
-      monthName = await getMonthFromFinancialYear(financial_year, sql);
+      monthName = await getMonthFromFinancialYear(financial_year);
     }
 
     return Response.json({

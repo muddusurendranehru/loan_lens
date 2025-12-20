@@ -1,0 +1,52 @@
+========================================
+CORRECT URLs FOR LOAN LENS
+========================================
+
+✅ WORKING URLs (Copy & Paste):
+
+1. Home/Root (auto-redirects to login):
+   http://localhost:3001/
+
+2. Signup Page:
+   http://localhost:3001/signup
+
+3. Login Page:
+   http://localhost:3001/login
+
+4. Dashboard (requires login):
+   http://localhost:3001/dashboard
+
+5. API Endpoints:
+   http://localhost:3001/api/auth/signup
+   http://localhost:3001/api/auth/[...nextauth]
+   http://localhost:3001/api/emis/summary
+   http://localhost:3001/api/emis/confirm
+   http://localhost:3001/api/report/cashflow
+
+========================================
+TROUBLESHOOTING 404 ERRORS
+========================================
+
+If you see 404:
+1. Make sure server is running:
+   Check: netstat -ano | findstr :3001
+
+2. Use EXACT URLs above (no trailing slashes)
+
+3. Server must be started with:
+   cd C:\Users\MYPC\Desktop\loan_lens
+   npm run dev
+
+4. Wait 10-15 seconds after starting server
+
+5. Clear browser cache (Ctrl+F5)
+
+========================================
+QUICK TEST
+========================================
+
+Open in browser:
+http://localhost:3001/signup
+
+If this works, your server is running correctly!
+

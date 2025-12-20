@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import db from '@/lib/db';
 import bcrypt from 'bcrypt';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,22 +32,23 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email, created_at',
-      [email.toLowerCase(), hashedPassword]
-    );
+    const result = await db`
+      INSERT INTO users (email, password) 
+      VALUES (${email.toLowerCase()}, ${hashedPassword}) 
+      RETURNING id, email, created_at
+    `;
 
     return NextResponse.json({
       success: true,
       message: 'User created successfully',
-      user: result.rows[0]
+      user: result[0]
     }, { status: 201 });
 
   } catch (error: any) {
     console.error('Signup error:', error);
 
     // Handle duplicate email
-    if (error.code === '23505') {
+    if (error.code === '23505' || error.message?.includes('unique constraint') || error.message?.includes('duplicate key')) {
       return NextResponse.json(
         { error: 'Email already exists' },
         { status: 409 }
