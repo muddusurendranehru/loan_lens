@@ -1,10 +1,12 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,6 +15,13 @@ export default function Login() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Check for error from URL params
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(`Login failed: ${errorParam}`);
+    }
+    
+    // Check for success from signup
     if (searchParams.get('signup') === 'success' || searchParams.get('registered') === 'true') {
       setSuccess('Account created successfully! Please log in.');
     }
