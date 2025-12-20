@@ -1,6 +1,6 @@
 import { sql } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { getFinancialYear, parseDate, formatDateISO } from '@/lib/dateUtils';
+import { getFinancialYear, parseDateToDate, formatDateISO } from '@/lib/dateUtils';
 
 interface Transaction {
   date: string;
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      const txnDate = parseDate(date);
+      const txnDate = parseDateToDate(date);
       if (!txnDate) {
         errors.push(`Invalid date: ${date}`);
         skippedCount++;

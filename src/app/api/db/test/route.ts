@@ -35,7 +35,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       connection: connectionResult[0],
-      tables: tablesResult.map((t: { table_name: string }) => t.table_name),
+      tables: tablesResult.map((t: Record<string, any>) => t.table_name as string),
       counts: {
         users: usersCount,
         loan_emis: emisCount

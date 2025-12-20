@@ -1,80 +1,81 @@
-# 🚀 Quick Start Guide
+# Quick Start Guide
 
-## Server Status
+## 🚀 Start the Server
 
-**Next.js Development Server** (Frontend + Backend combined)
-- **URL:** http://localhost:3000
-- **Status:** Starting...
+### Option 1: Use the Script
+Double-click: `START_SERVER.bat` or `START_SERVER.ps1`
 
-## How to Start
-
-### Option 1: Using npm (Recommended)
-```bash
+### Option 2: Manual Command
+```powershell
+cd C:\Users\pc\Desktop\loan_lens\loan_lens
 npm run dev
 ```
 
-### Option 2: Using PowerShell Script
+**Correct Path**: `C:\Users\pc\Desktop\loan_lens\loan_lens`
+
+## 🌐 Server URL
+
+Once started, server will be available at:
+**http://localhost:3000**
+
+## 📤 Test Upload API
+
+### Using PowerShell:
 ```powershell
-.\start-servers.ps1
+$file = "24septicici.xlsx"
+curl -X POST http://localhost:3000/api/parse/upload `
+  -F "file=@$file" `
+  -F "sheetName=24septicici.xlsx"
 ```
 
-### Option 3: Using Batch File
-```cmd
-start-servers.bat
+### Expected Response:
+```json
+{
+  "success": true,
+  "saved": 7,
+  "month": "September 2024"
+}
 ```
 
----
+## 📊 Test Report API
 
-## 🌐 URLs
+### Browser:
+Visit: `http://localhost:3000/api/report/cashflow?financial_year=2024-25`
 
-### Frontend Pages
-- **Home/Login:** http://localhost:3000
-- **Signup:** http://localhost:3000/signup
-- **Login:** http://localhost:3000/login
-- **Dashboard:** http://localhost:3000/dashboard
+### PowerShell:
+```powershell
+curl http://localhost:3000/api/report/cashflow?financial_year=2024-25
+```
 
-### Backend API Endpoints
-- **Test Connection:** http://localhost:3000/api/db/test-connection
-- **Test Insert/Fetch:** http://localhost:3000/api/db/test-insert-fetch
-- **Upload Parse:** http://localhost:3000/api/parse/upload (POST)
-- **Confirm Save:** http://localhost:3000/api/parse/confirm (POST)
-- **Dashboard Months:** http://localhost:3000/api/dashboard/months (GET)
-- **Monthly EBITDA:** http://localhost:3000/api/dashboard/monthly?month=03&year=2025 (GET)
-
----
-
-## 🧪 Test Flow
-
-1. **Open:** http://localhost:3000/login
-2. **Login:** admin@loanlens.com / securepassword123
-3. **Dashboard:** Select "Savings Account"
-4. **Upload:** Choose `test-homa-march-2025.xlsx`
-5. **Scan:** Click "Scan for Transactions"
-6. **Review:** Check detected categories
-7. **Save:** Click "SAVE ALL"
-8. **View:** See EBITDA dashboard
-
----
-
-## 📁 Test Files
-
-- **Excel File:** `test-homa-march-2025.xlsx` (created)
-- **Test Script:** `test-api-flow.js` (run with `node test-api-flow.js`)
-
----
+### Expected Response:
+```json
+{
+  "success": true,
+  "summary": {
+    "total_inflow": 250000,
+    "total_outflow": 391000
+  }
+}
+```
 
 ## ✅ Verification Checklist
 
-- [ ] Server running on http://localhost:3000
-- [ ] Login page loads
-- [ ] Can login with admin credentials
-- [ ] Dashboard loads
-- [ ] Can upload test Excel file
-- [ ] Transactions detected correctly
-- [ ] Can save transactions
-- [ ] EBITDA card displays
+- [ ] Server starts without errors
+- [ ] Can access http://localhost:3000
+- [ ] Upload API returns success with saved count
+- [ ] Report API returns summary data
+- [ ] Database has entries in `cashflow_entries` table
 
----
+## 🐛 Troubleshooting
 
-**Server should be ready in ~10-15 seconds after starting!**
+**Wrong Directory Error:**
+- Always use: `C:\Users\pc\Desktop\loan_lens\loan_lens`
+- Use `START_SERVER.bat` to avoid path issues
 
+**Port 3000 Already in Use:**
+- Stop other Node.js processes: `Stop-Process -Name node -Force`
+- Or change port in `package.json`: `"dev": "next dev -p 3001"`
+
+**DATABASE_URL Error:**
+- Check `.env.local` exists
+- Verify `DATABASE_URL` is set correctly

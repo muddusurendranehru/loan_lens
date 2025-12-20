@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { signOut } from 'next-auth/react';
+import MonthlyCashflowCard from '@/components/MonthlyCashflowCard';
 
 type Transaction = {
   date: string;
@@ -37,20 +38,41 @@ type SavedTransaction = {
 
 const CATEGORIES = {
   inflow: [
-    { id: 'clinic_revenue', label: 'Clinic Revenue (HOMA)' },
-    { id: 'other_income', label: 'Other Income' },
     { id: 'business_loan', label: 'Business Loan' },
+    { id: 'clinic_income', label: 'Clinic Income' },
+    { id: 'income', label: 'Income' },
   ],
   outflow: [
-    { id: 'salaries', label: 'Salaries' },
+    { id: 'emi', label: 'EMI' },
     { id: 'rent', label: 'Rent' },
+    { id: 'tax', label: 'Tax' },
     { id: 'vendor_payment', label: 'Vendor Payment' },
-    { id: 'emi_interest', label: 'EMI Interest' },
-    { id: 'emi_principal', label: 'EMI Principal' },
-    { id: 'bank_interest', label: 'Bank Interest' },
-    { id: 'personal', label: 'Personal' },
+    { id: 'transfer', label: 'Transfer' },
   ],
 };
+
+// Helper function for readable labels
+function getReadableLabel(category: string, flow: string): string {
+  const inflowMap: Record<string, string> = {
+    'business_loan': 'Business Loan',
+    'clinic_income': 'Clinic Income',
+    'income': 'Other Income'
+  };
+  
+  const outflowMap: Record<string, string> = {
+    'emi': 'EMI (HDFC, TATA, etc.)',
+    'vendor_payment': 'Vendor Payments',
+    'rent': 'Rent',
+    'tax': 'Tax',
+    'transfer': 'Transfers'
+  };
+
+  return (flow === 'inflow' ? inflowMap[category] : outflowMap[category]) || category;
+}
+
+// Helper functions for category labels (backwards compatibility)
+const getInflowLabel = (category: string): string => getReadableLabel(category, 'inflow');
+const getOutflowLabel = (category: string): string => getReadableLabel(category, 'outflow');
 
 // Helper to split EMI into principal and interest (user can do this manually)
 const splitEMI = (totalEMI: number, interestPortion: number = 0.3) => {
@@ -59,13 +81,13 @@ const splitEMI = (totalEMI: number, interestPortion: number = 0.3) => {
   return { interest, principal };
 };
 
-// Format amount in Indian Rupees
+// Format amount in Indian Rupees with 2 decimal places
 const formatINR = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(amount);
 };
 
@@ -83,6 +105,9 @@ export default function Dashboard() {
   const [savedMonths, setSavedMonths] = useState<MonthSummary[]>([]);
   const [txnsByMonth, setTxnsByMonth] = useState<Record<string, SavedTransaction[]>>({});
   const [totals, setTotals] = useState({ total_inflow: 0, total_outflow: 0, net_balance: 0, total_transactions: 0 });
+  const [report, setReport] = useState<any>(null);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState<string>('2024-25');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch saved data
@@ -109,6 +134,24 @@ export default function Dashboard() {
       }
     } catch (err) {
       console.error('Failed to fetch saved data:', err);
+    }
+  }, []);
+
+  // Fetch report data
+  const fetchReport = useCallback(async (financialYear: string, month?: string) => {
+    if (!financialYear) return;
+    try {
+      let url = `/api/report/cashflow?financial_year=${financialYear}`;
+      if (month) {
+        url += `&month=${month}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success) {
+        setReport(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch report:', err);
     }
   }, []);
 
@@ -364,36 +407,62 @@ export default function Dashboard() {
           {/* Key Metrics */}
           <div className="space-y-3">
             {/* EBITDA */}
-            <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
+            <div className="bg-blue-50 rounded-lg p-4 text-center border-2 border-blue-200">
               <p className="text-sm text-gray-600 mb-1">📊 EBITDA</p>
-              <p className={`text-2xl font-bold ${ebitdaData.metrics.ebitda >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
+              <p className={`text-3xl font-bold ${ebitdaData.metrics.ebitda >= 0 ? 'text-blue-700' : 'text-red-700'}`}>
                 {formatINR(ebitdaData.metrics.ebitda)}
               </p>
+              <p className="text-xs text-gray-500 mt-1">Revenue - Operating Expenses</p>
             </div>
 
-            {/* Net Cashflow (after principal) */}
-            <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
-              <p className="text-sm text-gray-600 mb-1">📊 Net Cashflow</p>
-              <p className={`text-xl font-bold ${(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
-                {(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow) >= 0 ? '' : '-'}
-                {formatINR(Math.abs(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow))}
-                {ebitdaData.loans.emi_principal > 0 && (
-                  <span className="text-xs text-gray-500 block mt-1">(after principal)</span>
-                )}
+            {/* Net Operating Profit (after interest) */}
+            <div className="bg-purple-50 rounded-lg p-4 text-center border-2 border-purple-200">
+              <p className="text-sm text-gray-600 mb-1">💼 Net Operating Profit</p>
+              <p className={`text-2xl font-bold ${(ebitdaData.metrics.net_operating_profit || ebitdaData.metrics.ebitda - ebitdaData.interest.total) >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                {formatINR(ebitdaData.metrics.net_operating_profit || ebitdaData.metrics.ebitda - ebitdaData.interest.total)}
               </p>
+              <p className="text-xs text-gray-500 mt-1">After Interest</p>
             </div>
 
-            {/* New Loans Info */}
-            {ebitdaData.loans.new_loans > 0 && (
-              <div className="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-                <p className="text-sm text-gray-700 text-center">
-                  🔁 New Loans: <span className="font-bold text-yellow-700">{formatINR(ebitdaData.loans.new_loans)}</span>
-                  {ebitdaData.loans.total_emi > 0 && (
-                    <span> → used to fund EMI</span>
-                  )}
-                </p>
+            {/* Net Cashflow */}
+            <div className="bg-gray-50 rounded-lg p-4 text-center border-2 border-gray-200">
+              <p className="text-sm text-gray-600 mb-1">💵 Net Cashflow</p>
+              <p className={`text-2xl font-bold ${(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow) >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                {(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow) >= 0 ? '+' : ''}
+                {formatINR(ebitdaData.metrics.net_cashflow_after_principal || ebitdaData.metrics.net_cashflow)}
+              </p>
+              {ebitdaData.loans.emi_principal > 0 && (
+                <p className="text-xs text-gray-500 mt-1">(after principal payments)</p>
+              )}
+            </div>
+
+            {/* Loan Dependency */}
+            <div className="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-200">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-gray-700">🔁 New Loans:</span>
+                <span className="font-bold text-yellow-700">{formatINR(ebitdaData.loans.new_loans)}</span>
               </div>
-            )}
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-700">📉 Total EMI:</span>
+                <span className="font-bold text-red-700">{formatINR(ebitdaData.loans.total_emi)}</span>
+              </div>
+              {ebitdaData.metrics.loan_dependency !== undefined && (
+                <div className="mt-2 pt-2 border-t border-yellow-300">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-600">Loan Dependency:</span>
+                    <span className={`text-sm font-bold ${ebitdaData.metrics.loan_dependency > 0 ? 'text-yellow-700' : 'text-green-700'}`}>
+                      {ebitdaData.metrics.loan_dependency > 0 ? '+' : ''}
+                      {formatINR(ebitdaData.metrics.loan_dependency)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1 text-center">
+                    {ebitdaData.metrics.loan_dependency > 0 
+                      ? 'Taking more loans than paying EMI' 
+                      : 'Paying more EMI than taking loans'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -472,14 +541,15 @@ export default function Dashboard() {
 
           <button
             onClick={handleUpload}
-            disabled={status === 'uploading'}
+            disabled={status !== 'idle'}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium disabled:opacity-50"
           >
-            {status === 'uploading' ? '🔍 Scanning...' : '🔍 Scan for Transactions'}
+            {status !== 'idle' ? '🔍 Scanning...' : '🔍 Scan for Transactions'}
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-2">
-            Detects: Inflows ≥ ₹50,000 | Outflows ≥ ₹15,000
+            Detects: Inflows ≥ ₹10,000 | Outflows ≥ ₹10,000<br/>
+            All amounts in Indian Rupees (₹)
           </p>
         </div>
       )}
@@ -504,9 +574,9 @@ export default function Dashboard() {
                   <div key={idx} className="flex justify-between items-center bg-green-50 rounded-lg p-3">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-800">
-                        • {txn.category === 'clinic_revenue' ? 'Clinic Revenue' : 
-                           txn.category === 'other_income' ? 'Other Income' :
-                           txn.category === 'business_loan' ? 'Business Loan' : txn.category}: {formatINR(txn.amount)}
+                        • {txn.category === 'business_loan' ? 'Business Loan' : 
+                           txn.category === 'clinic_income' ? 'Clinic Income' :
+                           txn.category === 'income' ? 'Income' : txn.category}: {formatINR(txn.amount)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">{txn.description || 'No description'}</p>
                     </div>
@@ -538,13 +608,11 @@ export default function Dashboard() {
                   <div key={idx} className="flex justify-between items-center bg-red-50 rounded-lg p-3">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-800">
-                        • {txn.category === 'salaries' ? 'Salaries' :
+                        • {txn.category === 'emi' ? 'EMI' :
                            txn.category === 'rent' ? 'Rent' :
+                           txn.category === 'tax' ? 'Tax' :
                            txn.category === 'vendor_payment' ? 'Vendor Payment' :
-                           txn.category === 'emi_interest' ? 'EMI Interest' :
-                           txn.category === 'emi_principal' ? 'EMI Principal' :
-                           txn.category === 'bank_interest' ? 'Bank Interest' :
-                           txn.category === 'personal' ? 'Personal' : txn.category}: {formatINR(txn.amount)}
+                           txn.category === 'transfer' ? 'Transfer' : txn.category}: {formatINR(txn.amount)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">{txn.description || 'No description'}</p>
                     </div>
@@ -637,10 +705,10 @@ export default function Dashboard() {
           {/* Save Button */}
           <button
             onClick={handleSaveAll}
-            disabled={status === 'saving'}
+            disabled={status !== 'ready'}
             className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold disabled:opacity-50"
           >
-            {status === 'saving' ? '💾 Saving...' : '💾 SAVE ALL'}
+            {status !== 'ready' ? '💾 Saving...' : '💾 SAVE ALL'}
           </button>
         </div>
       )}
@@ -722,6 +790,66 @@ export default function Dashboard() {
           })}
         </div>
       )}
+
+      {/* Report Section */}
+      <div className="bg-white rounded-xl p-5 shadow-lg mb-4 border-2 border-gray-200">
+        <h2 className="font-bold text-xl text-gray-800 mb-4">📊 Cashflow Report</h2>
+        
+        <div className="mb-4">
+          <label className="block text-sm text-gray-600 mb-2">Financial Year</label>
+          <input
+            type="text"
+            placeholder="2024-25"
+            value={selectedFinancialYear}
+            onChange={(e) => setSelectedFinancialYear(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg text-sm mb-2"
+          />
+          
+          <label className="block text-sm text-gray-600 mb-2 mt-3">Month (Optional)</label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg text-sm mb-2"
+          >
+            <option value="">All Months</option>
+            <option value="04">April 2024</option>
+            <option value="05">May 2024</option>
+            <option value="06">June 2024</option>
+            <option value="07">July 2024</option>
+            <option value="08">August 2024</option>
+            <option value="09">September 2024</option>
+            <option value="10">October 2024</option>
+            <option value="11">November 2024</option>
+            <option value="12">December 2024</option>
+            <option value="01">January 2025</option>
+            <option value="02">February 2025</option>
+            <option value="03">March 2025</option>
+          </select>
+          
+          <button
+            onClick={() => fetchReport(selectedFinancialYear, selectedMonth)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+          >
+            Generate Report
+          </button>
+        </div>
+
+        {report?.success && (
+          <MonthlyCashflowCard
+            month={report.month || selectedFinancialYear || 'Financial Year'}
+            income={(report.income || []).map((item: any) => ({
+              label: item.label,
+              amount: item.amount,
+              description: item.description || undefined,
+            }))}
+            expenses={(report.expenses || []).map((item: any) => ({
+              label: item.label,
+              amount: item.amount,
+            }))}
+            netCashflow={report.summary?.net_balance || 0}
+          />
+        )}
+      </div>
 
       {/* Empty State */}
       {savedMonths.length === 0 && status === 'idle' && (
