@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
+    // Validation
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -30,8 +31,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Insert user into database
     const result = await db`
       INSERT INTO users (email, password) 
       VALUES (${email.toLowerCase()}, ${hashedPassword}) 
@@ -41,7 +44,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'User created successfully',
-      user: result[0]
+      user: {
+        id: result[0].id,
+        email: result[0].email,
+        created_at: result[0].created_at
+      }
     }, { status: 201 });
 
   } catch (error: any) {
