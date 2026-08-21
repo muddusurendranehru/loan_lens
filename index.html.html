@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Loan EMI Report — May to July 2026 (Both Accounts)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f3f8; color: #222; padding: 24px; }
+  .container { max-width: 1020px; margin: auto; }
+  h1 { font-size: 21px; color: #1a3c6e; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .card { background: #fff; border-radius: 10px; padding: 20px 24px; margin-bottom: 18px; box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
+  h2 { font-size: 15px; color: #1a3c6e; margin-bottom: 12px; border-bottom: 2px solid #e0e8f5; padding-bottom: 7px; }
+  h3 { font-size: 13px; color: #444; margin: 14px 0 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { background: #1a3c6e; color: #fff; padding: 8px 10px; text-align: left; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #eef0f4; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f8fafd; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .red { background: #fde8e8; color: #c0392b; }
+  .yellow { background: #fef3cd; color: #856404; }
+  .green { background: #d4edda; color: #155724; }
+  .grey { background: #e2e3e5; color: #383d41; }
+  .blue { background: #d0e8f8; color: #0a4c8a; }
+  .num { font-family: monospace; }
+  .crit { color: #c0392b; font-weight: 700; }
+  .ok { color: #155724; font-weight: 700; }
+  .total-row td { font-weight: 700; background: #eef2f9 !important; }
+  .bounce-row td { background: #fff8f0 !important; font-size: 11.5px; color: #7a4000; }
+  .alert { border-left: 4px solid #c0392b; background: #fdf3f3; padding: 11px 15px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; line-height: 1.55; }
+  .alert-warn { border-color: #e67e22; background: #fef9f0; }
+  .alert-info { border-color: #2980b9; background: #f0f7fd; }
+  .alert-ok { border-color: #27ae60; background: #f0faf4; }
+  .acct-tag { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+  .icici { background: #fff0e0; color: #c05000; }
+  .hdfc { background: #e0f0ff; color: #0050a0; }
+  .action-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+  .action-item:last-child { border-bottom: none; }
+  .anum { background: #c0392b; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .loan-id { font-family: monospace; font-size: 11px; background: #f0f0f0; padding: 1px 5px; border-radius: 3px; }
+  .meta-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .meta-box { background: #f0f4fa; border-radius: 8px; padding: 9px 14px; font-size: 12px; }
+  .meta-box strong { display: block; font-size: 17px; color: #1a3c6e; margin-top: 2px; }
+  .divider { border: none; border-top: 2px dashed #dde3ed; margin: 16px 0; }
+  .month-header { background: #1a3c6e; color: white; padding: 5px 12px; border-radius: 5px; font-size: 12px; font-weight: 700; display: inline-block; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🏦 Loan EMI Report — Both Bank Accounts</h1>
+  <p class="subtitle">
+    <span class="acct-tag icici">ICICI</span> Saving A/c 020201005703 — MUDDU SURENDRA NEHRU &nbsp;|&nbsp; Mar 3 – Aug 10, 2026
+    &nbsp;&nbsp;
+    <span class="acct-tag hdfc">HDFC</span> A/c 50200088839027 — HOMA CLINICS PVT LTD &nbsp;|&nbsp; May 1 – Jul 31, 2026
+  </p>
+
+  <!-- KEY ALERTS -->
+  <div class="alert-info alert">
+    ℹ️ <strong>Using Actual Loan IDs:</strong> Transactions below are identified by their actual loan account numbers found in bank narrations and the debt restructure file — not by the short names (hdfcloan / bjloan1 / bjloan3 / tataloan) to avoid confusion.
+  </div>
+  <div class="alert">
+    ⚠️ <strong>CRITICAL — Both Accounts Checked:</strong> Of the 4 loans in the project instructions (HDFC ₹1,88,522 · Bajaj Auto ₹66,687 · Bajaj Unsecured ₹33,435 · TATA Capital ₹28,142), <strong>zero full EMIs</strong> were paid in May, June, or July from either account. Only <strong>Loan 138242142147</strong> and <strong>Aditya Birla (ABS_HDIL000000918332)</strong> show any activity — and these are <em>different loans</em> from what your project instructions track.
+  </div>
+
+  <!-- SUMMARY BOXES -->
+  <div class="meta-row">
+    <div class="meta-box">Loans in Project Tracker<strong>4</strong>HDFC · Bajaj Auto · Bajaj Unsec · TATA</div>
+    <div class="meta-box">Full EMIs Paid (May–Jul)<strong class="crit">0 of 12</strong>All missed</div>
+    <div class="meta-box">Loans in Restructure File<strong>4</strong>L&T · HDFC24 · BajajNew · Aditya Birla</div>
+    <div class="meta-box">Bounce Charges Paid<strong class="crit">₹8,400+</strong>ICICI acct only</div>
+    <div class="meta-box">Aditya Birla Apr EMI<strong class="ok">₹70,255 ✓</strong>One-time paid Apr</div>
+  </div>
+
+  <!-- ===================== LOAN 1 ===================== -->
+  <div class="card">
+    <h2>Loan Account: <span class="loan-id">138242142147</span> — Bajaj Finance (Unsecured) <span class="acct-tag icici">ICICI 020201005703</span></h2>
+    <p style="font-size:12px;color:#555;margin-bottom:12px;">Identified via keyword <strong>SMSOTP__138242142147</strong> in bank narrations. Also appears as <strong>BFLo~[date]~138242</strong> in bounce/penalty charges. Maps to your short name <em>"bjloan3"</em>. Expected EMI: <strong>₹33,435/month</strong> (tracker) or ₹32,793 (restructure file as BAJNEWLOAN / P400PHF5866519).</p>
+
+    <div class="month-header">April 2026</div>
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Type</th><th>Narration</th><th>Amount</th><th>Remark</th></tr>
+      <tr><td>53</td><td>02.04.26</td><td>SMSOTP</td><td>CMS/001918124525/SMSOTP__138242142147</td><td class="num crit">₹1,021</td><td>Partial ACH — insufficient balance</td></tr>
+      <tr class="bounce-row"><td>60</td><td>04.04.26</td><td>Bounce chg</td><td>AD~2Of Bnk BFLo~03APR26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>62</td><td>04.04.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~02APR26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+    </table>
+    <p style="font-size:11px;color:#a00;margin:6px 0 12px;">April status: <strong>PARTIAL</strong> — ₹1,021 paid of ₹33,435. Shortfall: ₹32,414. Bounce charges: ₹1,180.</p>
+
+    <div class="month-header">May 2026</div>
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Type</th><th>Narration</th><th>Amount</th><th>Remark</th></tr>
+      <tr><td>124</td><td>02.05.26</td><td>SMSOTP</td><td>CMS/001932532861/SMSOTP__138242142147</td><td class="num crit">₹3,975</td><td>Partial ACH — still insufficient balance</td></tr>
+      <tr class="bounce-row"><td>125</td><td>04.05.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~02MAY26~138242</td><td class="num">₹335.56</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>127</td><td>05.05.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~04MAY26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>128</td><td>05.05.26</td><td>Bounce chg</td><td>AD~2Of Bnk BFLo~02MAY26~138242</td><td class="num">₹254.42</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>130</td><td>06.05.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~05MAY26~138242</td><td class="num">₹10.57</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>132</td><td>06.05.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~05MAY26~138242</td><td class="num">₹579.41</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>134</td><td>07.05.26</td><td>ECSRTN</td><td>ECSRTN1_020526701280426101265</td><td class="num">₹590</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>138</td><td>12.05.26</td><td>ECSRTN</td><td>ECSRTN1_080526701280426101265</td><td class="num">₹590</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>153</td><td>20.05.26</td><td>ECSRTN</td><td>ECSRTN1_190526701280426101265</td><td class="num">₹353</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>155</td><td>22.05.26</td><td>ECSRTN</td><td>ECSRTN1_190526701280426101265</td><td class="num">₹236.98</td><td>ECS return charge</td></tr>
+    </table>
+    <p style="font-size:11px;color:#a00;margin:6px 0 12px;">May status: <strong>PARTIAL</strong> — ₹3,975 paid of ₹33,435. Shortfall: ₹29,460. Bounce charges accumulated: ~₹3,539.</p>
+
+    <div class="month-header">June 2026</div>
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Type</th><th>Narration</th><th>Amount</th><th>Remark</th></tr>
+      <tr class="bounce-row"><td>189</td><td>04.06.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~03JUN26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>190</td><td>04.06.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~02JUN26~138242</td><td class="num">₹282.43</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>192</td><td>04.06.26</td><td>Bounce chg</td><td>AD~2Of Bnk BFLo~02JUN26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>193</td><td>04.06.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~02JUN26~138242</td><td class="num">₹307.55</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>240</td><td>10.06.26</td><td>ECSRTN</td><td>ECSRTN1_020626701280426101265</td><td class="num">₹590</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>270</td><td>15.06.26</td><td>ECSRTN</td><td>ECSRTN1_080626701280426101265</td><td class="num">₹483.98</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>272</td><td>23.06.26</td><td>ECSRTN</td><td>ECSRTN1_080626701280426101265</td><td class="num">₹5.99</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>274</td><td>29.06.26</td><td>ECSRTN</td><td>ECSRTN1_080626701280426101265</td><td class="num">₹99.99</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>275</td><td>29.06.26</td><td>ECSRTN</td><td>ECSRTN1_230626701280426101265</td><td class="num">₹590</td><td>ECS return charge</td></tr>
+    </table>
+    <p style="font-size:11px;color:#a00;margin:6px 0 12px;">June status: <strong>MISSED</strong> — ₹0 paid. Shortfall: ₹33,435. Bounce charges: ~₹3,540. Account balance hit ₹0.01 multiple times.</p>
+
+    <div class="month-header">July 2026</div>
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Type</th><th>Narration</th><th>Amount</th><th>Remark</th></tr>
+      <tr class="bounce-row"><td>307</td><td>08.07.26</td><td>ECSRTN</td><td>ECSRTN1_020726701280426101265</td><td class="num">₹590</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>348</td><td>18.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹181.01</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>350</td><td>21.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹1.99</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>353</td><td>25.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹5.66</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>354</td><td>25.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹26.90</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>355</td><td>29.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹8.68</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>358</td><td>29.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹172.35</td><td>ECS return charge</td></tr>
+      <tr class="bounce-row"><td>360</td><td>29.07.26</td><td>ECSRTN</td><td>ECSRTN1_110726701280426101265</td><td class="num">₹193.35</td><td>ECS return charge</td></tr>
+    </table>
+    <p style="font-size:11px;color:#a00;margin:6px 0 12px;">July status: <strong>MISSED</strong> — ₹0 paid. Shortfall: ₹33,435. Bounce charges: ~₹1,180.</p>
+
+    <div class="month-header">August 2026 (partial — up to 10 Aug)</div>
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Type</th><th>Narration</th><th>Amount</th><th>Remark</th></tr>
+      <tr class="bounce-row"><td>365</td><td>04.08.26</td><td>Bounce chg</td><td>AD~1Of Bnk BFLo~03AUG26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>366</td><td>04.08.26</td><td>Bounce chg</td><td>AD~2Of Bnk BFLo~03AUG26~138242</td><td class="num">₹590</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>367</td><td>04.08.26</td><td>Bounce chg</td><td>AD~3Of Bnk BFLo~03AUG26~138242</td><td class="num">₹106.68</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>369</td><td>06.08.26</td><td>Bounce chg</td><td>AD~3Of Bnk BFLo~03AUG26~138242</td><td class="num">₹18.01</td><td>Return charge</td></tr>
+      <tr class="bounce-row"><td>371</td><td>06.08.26</td><td>Bounce chg</td><td>AD~3Of Bnk BFLo~03AUG26~138242</td><td class="num">₹465.27</td><td>Return charge</td></tr>
+      <tr><td>377</td><td>10.08.26</td><td>SMSOTP</td><td>CMS/001990748810/SMSOTP__138242142147</td><td class="num crit">₹7,082</td><td>Partial ACH — still short</td></tr>
+    </table>
+    <p style="font-size:11px;color:#a00;margin:6px 0 4px;">Aug (to 10th): ₹7,082 partial. Expected full EMI ₹33,435. Bounce charges: ~₹1,770.</p>
+  </div>
+
+  <!-- ===================== LOAN 2: ADITYA BIRLA ===================== -->
+  <div class="card">
+    <h2>Loan Account: <span class="loan-id">ABS_HDIL000000918332</span> — Aditya Birla Finance <span class="acct-tag icici">ICICI 020201005703</span></h2>
+    <p style="font-size:12px;color:#555;margin-bottom:12px;">Identified via <strong>"Aditya Bir"</strong> UPI narration and <strong>AD~INGENOT~ADITYA BIR</strong> in bounce charge. Appears in restructure file as <em>ADITYABIRLA</em>. NOT in original project instruction loans. Expected EMI per restructure file: <strong>₹69,805/month</strong>.</p>
+
+    <table>
+      <tr><th>S.No</th><th>Date</th><th>Month</th><th>Type</th><th>Narration (trimmed)</th><th>Amount</th><th>Status</th></tr>
+      <tr><td>116</td><td>28.04.26</td><td>April</td><td>UPI Payment</td><td>UPI/Aditya Bir/payphiadityabi/UPI YES BANK</td><td class="num ok">₹70,255</td><td><span class="badge green">PAID ✓</span></td></tr>
+      <tr class="bounce-row"><td>312</td><td>09.07.26</td><td>July</td><td>Bounce chg</td><td>AD~1INGENOT~08JUL26~ADITYA BIR</td><td class="num">₹590</td><td><span class="badge red">Jul MISSED</span></td></tr>
+    </table>
+    <p style="font-size:12px;color:#555;margin-top:8px;line-height:1.55;">
+      <strong>April:</strong> ₹70,255 paid — matches expected ₹69,805 very closely (+₹450 variance, possibly interest rounding). ✅<br>
+      <strong>May:</strong> No payment found. ❌<br>
+      <strong>June:</strong> No payment found. ❌<br>
+      <strong>July:</strong> Bounce charge on 09.07 confirms EMI attempt failed — balance was ₹7,278 at time. ❌
+    </p>
+  </div>
+
+  <!-- ===================== LOAN 3: BAJAJ FINS UPI ===================== -->
+  <div class="card">
+    <h2>Bajaj Finance — UPI Payments (Loan Account Unclear) <span class="acct-tag icici">ICICI 020201005703</span> + <span class="acct-tag hdfc">HDFC 50200088839027</span></h2>
+    <p style="font-size:12px;color:#555;margin-bottom:10px;">Multiple Bajaj Finance UPI payments found — payee IDs <strong>bajajfinserv1</strong> / <strong>bajajfinance2</strong> / <strong>bajajfin@hdfcb</strong>. These may be manual part-payments against one or more Bajaj loan accounts. No ACH keyword "BAJAJ_AUTO_CD" found in either account.</p>
+
+    <table>
+      <tr><th>S.No</th><th>Source Acct</th><th>Date</th><th>Narration (trimmed)</th><th>Amount</th><th>Likely Loan</th></tr>
+      <tr><td>59</td><td><span class="acct-tag icici">ICICI</span></td><td>04.04.26</td><td>UPI/BAJAJ FINS/bajajfinserv1/UPI Transa/Kotak Mahi</td><td class="num">₹34,343</td><td>Possibly bjloan1 (Bajaj Auto ₹66,687) — partial</td></tr>
+      <tr><td>195</td><td><span class="acct-tag icici">ICICI</span></td><td>04.06.26</td><td>UPI/Bajaj Fina/bajajfinance2/UPIIntent/INDUSIND</td><td class="num">₹7,240</td><td>Unconfirmed</td></tr>
+      <tr><td>203</td><td><span class="acct-tag icici">ICICI</span></td><td>05.06.26</td><td>UPI/BAJAJ FINA/bajajfin@hdfcb/UPI HDFC BANK</td><td class="num">₹28,025</td><td>Unconfirmed (total Jun: ₹35,265)</td></tr>
+      <tr><td>—</td><td><span class="acct-tag hdfc">HDFC</span></td><td>08.05.26</td><td>UPI-BAJAJFINANCELIMITED-BAJAJFINSERVCBP.PAYU@HDFCBANK</td><td class="num">₹35,047</td><td>Unconfirmed — not ACH keyword</td></tr>
+    </table>
+    <div class="alert alert-warn" style="margin-top:10px;">
+      ⚠️ <strong>Cannot confirm which loan these UPI payments apply to</strong> without a Bajaj Finance account statement. None match the ACH keyword "BAJAJ_AUTO_CD" for bjloan1 (₹66,687). All amounts fall short of the ₹66,687 expected monthly EMI. Please call Bajaj Finance with reference numbers above to confirm allocation.
+    </div>
+  </div>
+
+  <!-- ===================== LOANS NOT FOUND ===================== -->
+  <div class="card">
+    <h2>Loans With ZERO Activity in Both Accounts</h2>
+    <table>
+      <tr><th>Loan</th><th>Account / Ref No.</th><th>Expected EMI</th><th>Keyword Searched</th><th>May</th><th>Jun</th><th>Jul</th><th>Verdict</th></tr>
+      <tr>
+        <td>HDFC Bank Loan<br><span style="font-size:11px;color:#666">"hdfcloan" in tracker</span></td>
+        <td class="loan-id">Not found in either statement</td>
+        <td class="num">₹1,88,522</td>
+        <td>ACH/HDFC BANK LTD</td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">All 3 MISSED</span></td>
+      </tr>
+      <tr>
+        <td>TATA Capital Loan<br><span style="font-size:11px;color:#666">"tataloan" in tracker</span></td>
+        <td class="loan-id">Not found in either statement</td>
+        <td class="num">₹28,142</td>
+        <td>TATA CAPITAL</td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">All 3 MISSED</span></td>
+      </tr>
+      <tr>
+        <td>L&amp;T Finance Loan<br><span style="font-size:11px;color:#666">LTLOAN in restructure file</span></td>
+        <td class="loan-id">240910207908339</td>
+        <td class="num">₹80,311</td>
+        <td>L&amp;T / LTLOAN</td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">All 3 MISSED</span></td>
+      </tr>
+      <tr>
+        <td>HDFC Loan 2024<br><span style="font-size:11px;color:#666">HDFCLOAN24 in restructure file</span></td>
+        <td class="loan-id">156028675</td>
+        <td class="num">₹52,842</td>
+        <td>HDFC / 156028675</td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">₹0</span></td>
+        <td><span class="badge red">All 3 MISSED</span></td>
+      </tr>
+    </table>
+    <p style="font-size:12px;color:#555;margin-top:8px;">These loans may be debited from a <strong>third account not yet shared</strong>, or EMI mandates may have lapsed/been cancelled. Please check with each lender.</p>
+  </div>
+
+  <!-- FINAL SUMMARY TABLE -->
+  <div class="card">
+    <h2>Final Summary Table — Copy to Your EMI Tracker</h2>
+    <table>
+      <tr>
+        <th>Loan ID / Account</th>
+        <th>Lender</th>
+        <th>Expected EMI</th>
+        <th>Apr Paid</th>
+        <th>May Paid</th>
+        <th>Jun Paid</th>
+        <th>Jul Paid</th>
+        <th>Bounce Charges</th>
+        <th>Overall Status</th>
+      </tr>
+      <tr>
+        <td class="loan-id">138242142147</td>
+        <td>Bajaj Finance (Unsecured)</td>
+        <td class="num">₹33,435</td>
+        <td class="num yellow">₹1,021*</td>
+        <td class="num yellow">₹3,975*</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">~₹8,400+</td>
+        <td><span class="badge yellow">Partial only</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">ABS_HDIL000000918332</td>
+        <td>Aditya Birla Finance</td>
+        <td class="num">₹69,805</td>
+        <td class="num ok">₹70,255 ✓</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹590</td>
+        <td><span class="badge yellow">Apr only</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">Bajaj UPI (unconfirmed)</td>
+        <td>Bajaj Finance (Auto / other)</td>
+        <td class="num">₹66,687</td>
+        <td class="num yellow">₹34,343*</td>
+        <td class="num yellow">₹35,047*</td>
+        <td class="num yellow">₹35,265*</td>
+        <td class="num crit">₹0</td>
+        <td>—</td>
+        <td><span class="badge yellow">Partial, unconfirmed</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">Not found — ACH/HDFC BANK LTD</td>
+        <td>HDFC Bank (hdfcloan)</td>
+        <td class="num">₹1,88,522</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td>—</td>
+        <td><span class="badge red">ALL MISSED</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">Not found — TATA CAPITAL</td>
+        <td>TATA Capital (tataloan)</td>
+        <td class="num">₹28,142</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td>—</td>
+        <td><span class="badge red">ALL MISSED</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">240910207908339</td>
+        <td>L&amp;T Finance (LTLOAN)</td>
+        <td class="num">₹80,311</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td>—</td>
+        <td><span class="badge red">ALL MISSED</span></td>
+      </tr>
+      <tr>
+        <td class="loan-id">156028675</td>
+        <td>HDFC Loan 2024 (HDFCLOAN24)</td>
+        <td class="num">₹52,842</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹0</td>
+        <td>—</td>
+        <td><span class="badge red">ALL MISSED</span></td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="2">GRAND TOTAL (Apr–Jul)</td>
+        <td class="num">varies</td>
+        <td class="num">₹1,05,619</td>
+        <td class="num">₹43,022</td>
+        <td class="num">₹35,265</td>
+        <td class="num crit">₹0</td>
+        <td class="num crit">₹8,990+</td>
+        <td></td>
+      </tr>
+    </table>
+    <p style="font-size:11px;color:#888;margin-top:6px;">* Partial payments — confirm with lender that credited to correct loan account. All Bajaj UPI rows need lender confirmation on which account they were applied to.</p>
+  </div>
+
+  <!-- ACTION ITEMS -->
+  <div class="card">
+    <h2>Action Items — Priority Order</h2>
+    <div class="action-item">
+      <div class="anum">1</div>
+      <div><strong>Loan 138242142147 (Bajaj Finance Unsecured):</strong> SMSOTP ACH is attempting debit every month but bouncing — account balance hits ₹0.01 repeatedly. ₹8,400+ in bounce charges already paid. Fund ICICI account 020201005703 with at least ₹33,435 by 1st of month to clear the mandate. Call Bajaj Finance to confirm outstanding dues and whether penal interest is compounding.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">2</div>
+      <div><strong>Loan ABS_HDIL000000918332 (Aditya Birla Finance):</strong> April paid (₹70,255 ✓). May, June, July all missed. A bounce charge on 09.07.26 confirms mandate is still active but failing. Urgently pay 3 overdue EMIs of ₹69,805 each = ₹2,09,415 + penal interest. Fund ICICI account before 8th of month for this mandate.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">3</div>
+      <div><strong>Bajaj Finance UPI payments — confirm allocation:</strong> UPI payments were made (₹34,343 in Apr, ₹35,047 in May from HDFC, ₹35,265 in Jun from ICICI) but NO "BAJAJ_AUTO_CD" ACH debit found. Call Bajaj Finance to verify (a) which loan account these UPIs were credited to, (b) whether bjloan1 (Bajaj Auto) is active or settled, and (c) obtain a loan account statement.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">4</div>
+      <div><strong>HDFC Bank Loan (expected ₹1,88,522/month):</strong> Zero activity in both accounts across 4 months. Either (a) mandate is linked to a completely different bank account, or (b) loan has defaulted/NPA. Call HDFC Bank with your loan account number immediately — a ₹1,88,522 monthly EMI going unpaid for 4 months = ₹7.5+ lakh overdue.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">5</div>
+      <div><strong>TATA Capital Loan (₹28,142/month):</strong> Zero activity found in both accounts. Same situation — either linked to a third account or in default. Contact TATA Capital customer care with your loan/account number to check status.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">6</div>
+      <div><strong>L&T Finance (Loan 240910207908339, ₹80,311/month) and HDFCLOAN24 (156028675, ₹52,842/month):</strong> Both from your restructure file — no payments found anywhere. Confirm with lenders whether these are under OTS/hold, or if they are being debited from a third bank account.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">7</div>
+      <div><strong>Share any additional bank accounts:</strong> The HDFC loan (₹1,88,522) and TATA Capital (₹28,142) ACH mandates must be linked to a bank account not covered by these two statements. If you have any other savings/current account, please share that statement to complete the picture.</div>
+    </div>
+    <div class="action-item">
+      <div class="anum">8</div>
+      <div><strong>Reconcile tracker vs restructure file:</strong> Your project tracker has 4 loans (HDFC, Bajaj Auto, Bajaj Unsecured, TATA Capital). Your restructure file has 4 different loans (L&T, HDFC24, BajajNew, Aditya Birla) at 20% OTS. Clarify: have the original loans been replaced by new restructured ones? Update the tracker with actual loan IDs (e.g., 138242142147, ABS_HDIL000000918332) to avoid future confusion.</div>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:#aaa;text-align:center;margin-top:10px;">
+    Generated 20 Aug 2026 &nbsp;|&nbsp; Sources: ICICI A/c 020201005703 (Mar–Aug 2026) + HDFC A/c 50200088839027 (May–Jul 2026) + FINALDEBTRESTRUCTURE2.xlsx
+  </p>
+</div>
+</body>
+</html>
