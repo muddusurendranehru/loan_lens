@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOMA CLINICS — Monthly Finance Summary 2026</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #222; }
+.header { background: #0d2b5e; color: white; padding: 18px 28px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header p { font-size: 12px; color: #aac4ff; margin-top: 4px; }
+.filter-note { background: #1e4080; color: #cce0ff; font-size: 12px; padding: 8px 28px; }
+
+/* TABS */
+.tabs { display: flex; background: #0d2b5e; padding: 0 28px; border-top: 1px solid #1e4080; }
+.tab { padding: 10px 20px; color: #aac4ff; cursor: pointer; font-size: 13px; font-weight: 600; border-bottom: 3px solid transparent; }
+.tab.active { color: white; border-bottom: 3px solid #4da3ff; }
+.tab:hover { color: white; }
+
+.content { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.month-panel { display: none; }
+.month-panel.active { display: block; }
+
+/* SUMMARY ROW */
+.summary-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.sbox { background: white; border-radius: 10px; padding: 14px 18px; flex: 1; min-width: 150px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-top: 4px solid #ccc; }
+.sbox.green { border-color: #27ae60; }
+.sbox.red { border-color: #e74c3c; }
+.sbox.blue { border-color: #2980b9; }
+.sbox.orange { border-color: #e67e22; }
+.sbox.grey { border-color: #95a5a6; }
+.sbox label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 600; }
+.sbox .amount { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 4px; }
+.sbox .sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+/* SECTION */
+.section { background: white; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+.section-title { padding: 12px 18px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.section-title.loans { background: #fff0f0; color: #c0392b; border-bottom: 1px solid #fde; }
+.section-title.income { background: #f0fff5; color: #1a7a3c; border-bottom: 1px solid #cfe; }
+.section-title.expense { background: #fff8f0; color: #a04000; border-bottom: 1px solid #fde8c0; }
+.section-title.transfer { background: #f0f4ff; color: #2344a0; border-bottom: 1px solid #d0dcff; }
+.section-title.skip { background: #f8f8f8; color: #888; border-bottom: 1px solid #eee; }
+
+table { width: 100%; border-collapse: collapse; }
+th { background: #f5f7fa; font-size: 11px; color: #555; font-weight: 700; padding: 8px 14px; text-align: left; text-transform: uppercase; border-bottom: 1px solid #e8eaed; }
+td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbff; }
+.amt-debit { color: #c0392b; font-weight: 700; font-family: monospace; }
+.amt-credit { color: #1a7a3c; font-weight: 700; font-family: monospace; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-paid { background: #d4edda; color: #155724; }
+.badge-partial { background: #fff3cd; color: #856404; }
+.badge-missed { background: #f8d7da; color: #721c24; }
+.badge-bounce { background: #ffe8d6; color: #7a3000; }
+.loan-id { font-family: monospace; font-size: 11px; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; color: #444; }
+.acct { font-size: 11px; color: #888; }
+.skip-note { padding: 10px 18px; font-size: 12px; color: #999; font-style: italic; }
+.no-data { padding: 16px 18px; font-size: 13px; color: #aaa; text-align: center; }
+.loan-to-loan-note { background: #e8f0ff; border: 1px solid #b0c8ff; border-radius: 6px; padding: 8px 14px; font-size: 12px; color: #1a3a8a; margin: 8px 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏥 HOMA CLINICS PRIVATE LIMITED — Monthly Finance Summary</h1>
+  <p>Accounts: ICICI Savings 020201005703 (Muddu Surendra Nehru) &nbsp;|&nbsp; HDFC Current 50200088839027 (Homa Clinics Pvt Ltd)</p>
+</div>
+<div class="filter-note">
+  ⚙️ <strong>Smart Filter ON:</strong> Only transactions above ₹5,000 are shown. Small amounts (toothbrush, petrol, subscriptions under ₹5,000) are counted but not listed — so nothing distracts from the real financial picture. Loan-to-Loan transfers are tagged separately and NOT counted as income or expense.
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showMonth('apr')">April 2026</div>
+  <div class="tab" onclick="showMonth('may')">May 2026</div>
+  <div class="tab" onclick="showMonth('jun')">June 2026</div>
+  <div class="tab" onclick="showMonth('jul')">July 2026</div>
+  <div class="tab" onclick="showMonth('aug')">Aug 2026 (partial)</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== APRIL 2026 ==================== -->
+<div class="month-panel active" id="apr">
+  <div class="summary-row">
+    <div class="sbox green"><label>Total Income (>₹5k)</label><div class="amount">₹0</div><div class="sub">No large credits found in Apr</div></div>
+    <div class="sbox red"><label>Loan EMI Paid</label><div class="amount">₹1,04,598</div><div class="sub">Aditya Birla ✓ + Bajaj UPI partial</div></div>
+    <div class="sbox orange"><label>Main Expenses</label><div class="amount">₹0</div><div class="sub">No large expenses >₹5k found</div></div>
+    <div class="sbox blue"><label>Loan-to-Loan</label><div class="amount">₹0</div><div class="sub">None this month</div></div>
+    <div class="sbox grey"><label>Small Txns Skipped</label><div class="amount">~85</div><div class="sub">All below ₹5,000</div></div>
+  </div>
+
+  <!-- LOAN EMI PAYMENTS -->
+  <div class="section">
+    <div class="section-title loans">🏦 Loan EMI Payments — April 2026</div>
+    <table>
+      <tr><th>Date</th><th>Lender / Company</th><th>Loan Account ID</th><th>Amount Paid</th><th>Expected EMI</th><th>Status</th><th>Account Used</th></tr>
+      <tr>
+        <td>28 Apr</td>
+        <td><strong>Aditya Birla Finance Ltd</strong></td>
+        <td><span class="loan-id">ABS_HDIL000000918332</span></td>
+        <td class="amt-debit">₹70,255</td>
+        <td>₹69,805</td>
+        <td><span class="badge badge-paid">PAID ✓</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>04 Apr</td>
+        <td><strong>Bajaj Finance Ltd</strong></td>
+        <td><span class="loan-id">Loan ID unconfirmed — call Bajaj</span></td>
+        <td class="amt-debit">₹34,343</td>
+        <td>₹66,687 (if Bajaj Auto)</td>
+        <td><span class="badge badge-partial">PARTIAL / UNCONFIRMED</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+    </table>
+    <div class="loan-to-loan-note">ℹ️ The Bajaj Finance ₹34,343 UPI payment — we cannot confirm which Bajaj loan account it was applied to without calling Bajaj Finance. Please ask them to confirm allocation to your loan account number.</div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="section">
+    <div class="section-title income">💰 Income & Credits above ₹5,000 — April 2026</div>
+    <div class="no-data">No income or credits above ₹5,000 found in April 2026 in either account.</div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="section">
+    <div class="section-title expense">🧾 Main Expenses above ₹5,000 — April 2026</div>
+    <div class="no-data">No other large expenses above ₹5,000 found in April (outside loan payments above).</div>
+  </div>
+
+  <!-- SKIPPED -->
+  <div class="section">
+    <div class="section-title skip">🔕 Small Transactions Skipped (below ₹5,000)</div>
+    <div class="skip-note">~85 small transactions skipped this month — includes bounce charges (₹590 each), UPI payments, petrol, groceries, online purchases, Google/Claude subscriptions, bank charges. These are visible in the original bank statement if needed.</div>
+  </div>
+</div>
+
+<!-- ==================== MAY 2026 ==================== -->
+<div class="month-panel" id="may">
+  <div class="summary-row">
+    <div class="sbox green"><label>Total Income (>₹5k)</label><div class="amount">₹9,447</div><div class="sub">Remitly — USA transfer</div></div>
+    <div class="sbox red"><label>Loan EMI Paid</label><div class="amount">₹35,047</div><div class="sub">Bajaj UPI from HDFC (unconfirmed loan)</div></div>
+    <div class="sbox orange"><label>Main Expenses</label><div class="amount">₹0</div><div class="sub">No large non-loan expenses</div></div>
+    <div class="sbox blue"><label>Loan-to-Loan</label><div class="amount">₹0</div><div class="sub">None this month</div></div>
+    <div class="sbox grey"><label>Small Txns Skipped</label><div class="amount">~95</div><div class="sub">All below ₹5,000</div></div>
+  </div>
+
+  <!-- LOAN EMI PAYMENTS -->
+  <div class="section">
+    <div class="section-title loans">🏦 Loan EMI Payments — May 2026</div>
+    <table>
+      <tr><th>Date</th><th>Lender / Company</th><th>Loan Account ID</th><th>Amount Paid</th><th>Expected EMI</th><th>Status</th><th>Account Used</th></tr>
+      <tr>
+        <td>08 May</td>
+        <td><strong>Bajaj Finance Ltd</strong></td>
+        <td><span class="loan-id">Loan ID unconfirmed — call Bajaj</span></td>
+        <td class="amt-debit">₹35,047</td>
+        <td>₹66,687 (if Bajaj Auto)</td>
+        <td><span class="badge badge-partial">PARTIAL / UNCONFIRMED</span></td>
+        <td><span class="acct">HDFC 50200088839027</span></td>
+      </tr>
+      <tr>
+        <td>02 May</td>
+        <td><strong>Bajaj Finance Ltd (Auto Debit)</strong></td>
+        <td><span class="loan-id">138242142147</span></td>
+        <td class="amt-debit">₹3,975</td>
+        <td>₹33,435</td>
+        <td><span class="badge badge-bounce">BOUNCED (below ₹5k, shown for info)</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>—</td>
+        <td><strong>Aditya Birla Finance Ltd</strong></td>
+        <td><span class="loan-id">ABS_HDIL000000918332</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹69,805</td>
+        <td><span class="badge badge-missed">MISSED ✗</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- INCOME -->
+  <div class="section">
+    <div class="section-title income">💰 Income & Credits above ₹5,000 — May 2026</div>
+    <table>
+      <tr><th>Date</th><th>Source</th><th>Type</th><th>Amount Received</th><th>Account</th><th>Note</th></tr>
+      <tr>
+        <td>~07 May</td>
+        <td><strong>Remitly (USA Transfer)</strong></td>
+        <td>International Transfer</td>
+        <td class="amt-credit">₹9,447</td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+        <td>⚠️ Bajaj bounce charge ₹579 fired same day — balance was ₹0.02 before this credit</td>
+      </tr>
+    </table>
+    <div class="loan-to-loan-note">⚠️ <strong>Alert:</strong> Remitly money is being eaten by bounce charges immediately on arrival. Switch Remitly to your Union Bank account to protect it.</div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="section">
+    <div class="section-title expense">🧾 Main Expenses above ₹5,000 — May 2026</div>
+    <div class="no-data">No other large expenses above ₹5,000 found in May (outside loan payments above).</div>
+  </div>
+
+  <!-- SKIPPED -->
+  <div class="section">
+    <div class="section-title skip">🔕 Small Transactions Skipped (below ₹5,000)</div>
+    <div class="skip-note">~95 small transactions skipped — bounce charges (6 entries × ₹590), UPI payments, bank fees, small purchases. See original ICICI/HDFC statement for full list.</div>
+  </div>
+</div>
+
+<!-- ==================== JUNE 2026 ==================== -->
+<div class="month-panel" id="jun">
+  <div class="summary-row">
+    <div class="sbox green"><label>Total Income (>₹5k)</label><div class="amount">₹0</div><div class="sub">No large credits found in Jun</div></div>
+    <div class="sbox red"><label>Loan EMI Paid</label><div class="amount">₹35,265</div><div class="sub">Bajaj UPI split payments (unconfirmed)</div></div>
+    <div class="sbox orange"><label>Main Expenses</label><div class="amount">₹0</div><div class="sub">No large non-loan expenses</div></div>
+    <div class="sbox blue"><label>Loan-to-Loan</label><div class="amount">₹0</div><div class="sub">None this month</div></div>
+    <div class="sbox grey"><label>Small Txns Skipped</label><div class="amount">~105</div><div class="sub">All below ₹5,000</div></div>
+  </div>
+
+  <!-- LOAN EMI PAYMENTS -->
+  <div class="section">
+    <div class="section-title loans">🏦 Loan EMI Payments — June 2026</div>
+    <table>
+      <tr><th>Date</th><th>Lender / Company</th><th>Loan Account ID</th><th>Amount Paid</th><th>Expected EMI</th><th>Status</th><th>Account Used</th></tr>
+      <tr>
+        <td>04 Jun</td>
+        <td><strong>Bajaj Finance Ltd</strong></td>
+        <td><span class="loan-id">Loan ID unconfirmed — call Bajaj</span></td>
+        <td class="amt-debit">₹7,240</td>
+        <td rowspan="2">₹66,687 (total)</td>
+        <td rowspan="2"><span class="badge badge-partial">PARTIAL — 2 payments total ₹35,265</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>05 Jun</td>
+        <td><strong>Bajaj Finance Ltd</strong></td>
+        <td><span class="loan-id">Loan ID unconfirmed — call Bajaj</span></td>
+        <td class="amt-debit">₹28,025</td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>—</td>
+        <td><strong>Bajaj Finance (Auto Debit)</strong></td>
+        <td><span class="loan-id">138242142147</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹33,435</td>
+        <td><span class="badge badge-missed">MISSED ✗ (bounced all month)</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>—</td>
+        <td><strong>Aditya Birla Finance Ltd</strong></td>
+        <td><span class="loan-id">ABS_HDIL000000918332</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹69,805</td>
+        <td><span class="badge badge-missed">MISSED ✗</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- INCOME -->
+  <div class="section">
+    <div class="section-title income">💰 Income & Credits above ₹5,000 — June 2026</div>
+    <div class="no-data">No income or credits above ₹5,000 found in June 2026 in either account.</div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="section">
+    <div class="section-title expense">🧾 Main Expenses above ₹5,000 — June 2026</div>
+    <div class="no-data">No other large expenses above ₹5,000 found in June (outside loan payments above).</div>
+  </div>
+
+  <!-- SKIPPED -->
+  <div class="section">
+    <div class="section-title skip">🔕 Small Transactions Skipped (below ₹5,000)</div>
+    <div class="skip-note">~105 small transactions skipped — 9 bounce charges totalling ~₹3,540, small UPI payments, bank fees. See original ICICI statement for full list.</div>
+  </div>
+</div>
+
+<!-- ==================== JULY 2026 ==================== -->
+<div class="month-panel" id="jul">
+  <div class="summary-row">
+    <div class="sbox green"><label>Total Income (>₹5k)</label><div class="amount">₹0</div><div class="sub">No large credits found in Jul</div></div>
+    <div class="sbox red"><label>Loan EMI Paid</label><div class="amount">₹0</div><div class="sub">All loans missed this month</div></div>
+    <div class="sbox orange"><label>Main Expenses</label><div class="amount">₹0</div><div class="sub">No large expenses found</div></div>
+    <div class="sbox blue"><label>Loan-to-Loan</label><div class="amount">₹0</div><div class="sub">None this month</div></div>
+    <div class="sbox grey"><label>Small Txns Skipped</label><div class="amount">~60</div><div class="sub">All below ₹5,000</div></div>
+  </div>
+
+  <!-- LOAN EMI PAYMENTS -->
+  <div class="section">
+    <div class="section-title loans">🏦 Loan EMI Payments — July 2026</div>
+    <table>
+      <tr><th>Date</th><th>Lender / Company</th><th>Loan Account ID</th><th>Amount Paid</th><th>Expected EMI</th><th>Status</th><th>Account Used</th></tr>
+      <tr>
+        <td>—</td>
+        <td><strong>Bajaj Finance (Auto Debit)</strong></td>
+        <td><span class="loan-id">138242142147</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹33,435</td>
+        <td><span class="badge badge-missed">MISSED ✗ (bounced all month)</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>09 Jul</td>
+        <td><strong>Aditya Birla Finance Ltd</strong></td>
+        <td><span class="loan-id">ABS_HDIL000000918332</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹69,805</td>
+        <td><span class="badge badge-missed">MISSED ✗ (bounce charge on 09 Jul confirms attempt failed)</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+      <tr>
+        <td>—</td>
+        <td><strong>All other loans</strong></td>
+        <td><span class="loan-id">See Zero-Activity table</span></td>
+        <td class="amt-debit">₹0</td>
+        <td>₹3,52,360 combined</td>
+        <td><span class="badge badge-missed">NO ACTIVITY in either account</span></td>
+        <td>—</td>
+      </tr>
+    </table>
+    <div class="loan-to-loan-note">🚨 <strong>July is a complete zero month.</strong> No EMI paid to any lender. Account balance was near ₹0 throughout. 8 bounce charges deducted totalling ~₹1,180.</div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="section">
+    <div class="section-title income">💰 Income & Credits above ₹5,000 — July 2026</div>
+    <div class="no-data">No income or credits above ₹5,000 found in July 2026 in either account.</div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="section">
+    <div class="section-title expense">🧾 Main Expenses above ₹5,000 — July 2026</div>
+    <div class="no-data">No large expenses above ₹5,000 found in July.</div>
+  </div>
+
+  <!-- SKIPPED -->
+  <div class="section">
+    <div class="section-title skip">🔕 Small Transactions Skipped (below ₹5,000)</div>
+    <div class="skip-note">~60 small transactions skipped — 8 bounce charges, minor UPI payments. Account was near-empty all month. See original ICICI statement for full list.</div>
+  </div>
+</div>
+
+<!-- ==================== AUGUST 2026 (partial) ==================== -->
+<div class="month-panel" id="aug">
+  <div class="summary-row">
+    <div class="sbox green"><label>Total Income (>₹5k)</label><div class="amount">₹0</div><div class="sub">Statement ends Aug 10</div></div>
+    <div class="sbox red"><label>Loan EMI Paid</label><div class="amount">₹7,082</div><div class="sub">Bajaj 138242142147 — partial only</div></div>
+    <div class="sbox orange"><label>Main Expenses</label><div class="amount">₹0</div><div class="sub">No large expenses found</div></div>
+    <div class="sbox blue"><label>Loan-to-Loan</label><div class="amount">₹0</div><div class="sub">None this month</div></div>
+    <div class="sbox grey"><label>Small Txns Skipped</label><div class="amount">~15</div><div class="sub">Aug 1–10 only</div></div>
+  </div>
+
+  <!-- LOAN EMI PAYMENTS -->
+  <div class="section">
+    <div class="section-title loans">🏦 Loan EMI Payments — August 2026 (up to 10 Aug only)</div>
+    <table>
+      <tr><th>Date</th><th>Lender / Company</th><th>Loan Account ID</th><th>Amount Paid</th><th>Expected EMI</th><th>Status</th><th>Account Used</th></tr>
+      <tr>
+        <td>10 Aug</td>
+        <td><strong>Bajaj Finance Ltd (Auto Debit)</strong></td>
+        <td><span class="loan-id">138242142147</span></td>
+        <td class="amt-debit">₹7,082</td>
+        <td>₹33,435</td>
+        <td><span class="badge badge-partial">PARTIAL — ₹26,353 short</span></td>
+        <td><span class="acct">ICICI 020201005703</span></td>
+      </tr>
+    </table>
+    <div class="loan-to-loan-note">📅 Statement ends 10 Aug 2026. Share August full statement to complete this month's picture.</div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="section">
+    <div class="section-title income">💰 Income & Credits above ₹5,000 — August 2026 (to 10 Aug)</div>
+    <div class="no-data">No income or credits above ₹5,000 found up to Aug 10.</div>
+  </div>
+
+  <!-- SKIPPED -->
+  <div class="section">
+    <div class="section-title skip">🔕 Small Transactions Skipped (below ₹5,000)</div>
+    <div class="skip-note">~15 small transactions skipped — 5 bounce charges on 04–06 Aug totalling ~₹1,770. See original ICICI statement for full list.</div>
+  </div>
+</div>
+
+<!-- LOAN ID REFERENCE TABLE (always visible) -->
+<div class="section" style="margin-top: 20px;">
+  <div class="section-title" style="background:#f5f7fa;color:#333;border-bottom:1px solid #e0e4ea;">📋 Loan ID Reference — What Each Loan Actually Is</div>
+  <table>
+    <tr><th>Lender Name</th><th>Loan Account ID</th><th>Your Old Nickname</th><th>Expected Monthly EMI</th><th>Where Debited From</th></tr>
+    <tr><td><strong>Bajaj Finance Ltd</strong></td><td><span class="loan-id">138242142147</span></td><td style="color:#999;text-decoration:line-through">bjloan3 / bajnew / unsecured</td><td>₹33,435</td><td>ICICI 020201005703 (auto debit)</td></tr>
+    <tr><td><strong>Aditya Birla Finance Ltd</strong></td><td><span class="loan-id">ABS_HDIL000000918332</span></td><td style="color:#999;text-decoration:line-through">adityabirla / AB</td><td>₹69,805</td><td>ICICI 020201005703 (auto debit)</td></tr>
+    <tr><td><strong>Bajaj Finance Ltd (Auto/Other)</strong></td><td><span class="loan-id">Not confirmed — call Bajaj</span></td><td style="color:#999;text-decoration:line-through">bajnew1 / baj22 / bjloan1</td><td>₹66,687</td><td>ICICI + HDFC (manual UPI)</td></tr>
+    <tr><td><strong>L&T Finance Ltd</strong></td><td><span class="loan-id">240910207908339</span></td><td style="color:#999;text-decoration:line-through">ltloan</td><td>₹80,311</td><td>Unknown — not in either statement</td></tr>
+    <tr><td><strong>HDFC Bank Loan</strong></td><td><span class="loan-id">156028675</span></td><td style="color:#999;text-decoration:line-through">hdfcloan24</td><td>₹52,842</td><td>Unknown — not in either statement</td></tr>
+    <tr><td><strong>HDFC Bank Loan (large)</strong></td><td><span class="loan-id">Not found in statements</span></td><td style="color:#999;text-decoration:line-through">hdfcloan</td><td>₹1,88,522</td><td>Unknown — check HDFC urgently</td></tr>
+    <tr><td><strong>TATA Capital</strong></td><td><span class="loan-id">Not found in statements</span></td><td style="color:#999;text-decoration:line-through">tataloan</td><td>₹28,142</td><td>Unknown — may be Union Bank account</td></tr>
+  </table>
+  <div class="loan-to-loan-note" style="margin:12px;">
+    💡 <strong>Loan-to-Loan Transfer Rule:</strong> If money comes IN from one lender (e.g. Tata Capital disburses ₹1 lakh) and goes OUT to another loan (e.g. HDFC home loan payment) in the same period — this report will tag it as <strong>"🔄 Loan-to-Loan Transfer"</strong> and NOT count it as your income or expense. This keeps your real financial picture accurate.
+  </div>
+</div>
+
+<div style="text-align:center;font-size:11px;color:#bbb;padding:20px 0;">
+  Generated Aug 2026 &nbsp;|&nbsp; Filter: Transactions above ₹5,000 only &nbsp;|&nbsp; Sources: ICICI 020201005703 (Mar–Aug 2026) + HDFC 50200088839027 (May–Jul 2026) + FINALDEBTRESTRUCTURE2.xlsx<br>
+  Share August + Union Bank statement to complete the picture.
+</div>
+
+</div><!-- /content -->
+
+<script>
+function showMonth(id) {
+  document.querySelectorAll('.month-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
